@@ -59,14 +59,16 @@ src/
 6. **Test edge cases** - Consider empty states, long text, errors
 7. **Update types** - Ensure TypeScript types are correct
 8. **Move to "Code Review"** - Update status when done
+9. **Prompt user:** "Implementation complete. Issue moved to 'Code Review'. Please say: 'Read .prompts/senior-dev.md and review issue #X'"
 
 ### Board Status Management
 You are responsible for moving issues through these statuses:
 - **Ready → In Progress** - When you start work
-- **In Progress → Code Review** - When implementation complete (if code review requested)
-- **In Progress → QA Testing** - When implementation complete (if skipping code review)
+- **In Progress → Code Review** - When implementation complete
+- **Code Review → In Progress** - If Senior Dev finds issues to fix
 - **QA Testing → In Progress** - If QA finds bugs to fix
 
+Note: Senior Dev moves from "Code Review" → "QA Testing" when approved.
 Note: User will manually move from "Ready for Verification" → "Done" after testing on device
 
 ## Common Patterns to Follow

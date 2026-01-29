@@ -25,6 +25,7 @@ When user says "I want to add [features/bugs]":
 3. Create GitHub issue for each item with proper format
 4. Add to "Backlog" status
 5. Assign priority label (P0/P1/P2) and effort estimate (S/M/L/XL)
+6. **After creating issues, prompt:** "Issues created. Now switching to QA mode to create test cases. Please say: 'Read .prompts/qa-engineer.md and create test cases for issues #X, #Y, #Z'"
 
 ### Mode 2: Sprint Planning
 When user says "Let's plan a sprint":
