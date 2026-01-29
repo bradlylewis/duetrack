@@ -28,7 +28,8 @@
 5. [005-dashboard-upcoming.md](backlog/tickets/005-dashboard-upcoming.md) – ✅ IMPLEMENTED
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – ✅ IMPLEMENTED
 7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – ✅ IMPLEMENTED
-8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – Ready
+8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – ✅ IMPLEMENTED
+9. [009-icons-picker.md](backlog/tickets/009-icons-picker.md) – Ready
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – Ready
 7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
 8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – Ready
@@ -181,7 +182,7 @@ src/
 - ✅ Bills CRUD (add, edit, delete with metadata)
 - ✅ Dashboard with urgency grouping (Overdue / This Week / Later)
 - ✅ Mark paid (with monthly rollover rule)
-- ⏳ Local notifications (3 days before + day-of at 9 AM)
+- ✅ Local notifications (3 days before + day-of at 9 AM)
 - ⏳ Icon picker (30 built-in icons)
 - ✅ Payment history tracking
 

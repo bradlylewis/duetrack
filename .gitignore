@@ -14,6 +14,10 @@ dist/
 web-build/
 .turbo
 
+# Native builds
+android/
+ios/
+
 # IDE
 .idea/
 *.iml

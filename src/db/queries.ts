@@ -1,6 +1,7 @@
 import { getAllAsync, getAsync, runAsync } from '@/src/db/database';
 import { Bill, Payment } from '@/src/types';
 import * as Crypto from 'expo-crypto';
+import { scheduleBillNotifications, cancelBillNotifications, rescheduleBillNotifications } from '@/src/utils/notification-scheduling';
 
 // Utility: Calculate next due date with month-end rollover
 function calculateNextDueDate(currentDueDate: number): number {
@@ -31,6 +32,11 @@ function calculateNextDueDate(currentDueDate: number): number {
 export async function insertBill(bill: Omit<Bill, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const id = Crypto.randomUUID();
   const now = Date.now();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Schedule notifications
+  const notificationIds = await scheduleBillNotifications(id, bill.name, bill.dueDate);
+  const notificationIdsJson = notificationIds.length > 0 ? JSON.stringify(notificationIds) : null;
 
   await runAsync(
     `INSERT INTO bills (id, name, dueDate, amount, frequency, autopay, notes, iconKey, status, createdAt, updatedAt, notificationIds, timezone)
@@ -47,8 +53,8 @@ export async function insertBill(bill: Omit<Bill, 'id' | 'createdAt' | 'updatedA
       bill.status || 'active',
       now,
       now,
-      bill.notificationIds || null,
-      bill.timezone || null,
+      notificationIdsJson,
+      timezone,
     ]
   );
 
@@ -87,8 +93,31 @@ export async function getAllBills(): Promise<Bill[]> {
 }
 
 export async function updateBill(id: string, updates: Partial<Bill>): Promise<void> {
+  // Get current bill to access notificationIds
+  const currentBill = await getBillById(id);
+  
   const updateFields: string[] = [];
   const values: any[] = [];
+
+  // Check if due date or name is being updated (need to reschedule notifications)
+  const shouldReschedule = updates.dueDate !== undefined || updates.name !== undefined;
+  
+  if (shouldReschedule && currentBill) {
+    const oldNotificationIds = currentBill.notificationIds ? JSON.parse(currentBill.notificationIds) : [];
+    const newName = updates.name || currentBill.name;
+    const newDueDate = updates.dueDate || currentBill.dueDate;
+    
+    // Reschedule notifications
+    const newNotificationIds = await rescheduleBillNotifications(
+      oldNotificationIds,
+      id,
+      newName,
+      newDueDate
+    );
+    
+    // Update notificationIds in the updates object
+    updates.notificationIds = newNotificationIds.length > 0 ? JSON.stringify(newNotificationIds) : null;
+  }
 
   Object.entries(updates).forEach(([key, value]) => {
     if (key === 'id' || key === 'createdAt') return;
@@ -112,6 +141,14 @@ export async function updateBill(id: string, updates: Partial<Bill>): Promise<vo
 }
 
 export async function deleteBill(id: string): Promise<void> {
+  // Get bill to access notificationIds before deleting
+  const bill = await getBillById(id);
+  
+  if (bill && bill.notificationIds) {
+    const notificationIds = JSON.parse(bill.notificationIds);
+    await cancelBillNotifications(notificationIds);
+  }
+  
   await runAsync('DELETE FROM bills WHERE id = ?', [id]);
 }
 
@@ -208,16 +245,24 @@ export async function markBillAsPaid(billId: string): Promise<void> {
     
     console.log('Monthly bill - advancing due date from', new Date(bill.dueDate), 'to', new Date(nextDueDate));
     
+    // updateBill will automatically reschedule notifications
     await updateBill(billId, {
       dueDate: nextDueDate,
       updatedAt: now,
     });
   } else {
-    // One-time bill: mark as completed
+    // One-time bill: mark as completed and cancel notifications
     console.log('One-time bill - marking as completed');
+    
+    // Cancel notifications since bill is completed
+    if (bill.notificationIds) {
+      const notificationIds = JSON.parse(bill.notificationIds);
+      await cancelBillNotifications(notificationIds);
+    }
     
     await updateBill(billId, {
       status: 'completed',
+      notificationIds: null,
       updatedAt: now,
     });
   }

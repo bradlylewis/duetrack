@@ -61,19 +61,22 @@ export async function openNotificationSettings(): Promise<void> {
 }
 
 export async function scheduleNotificationAsync(
-  trigger: Notifications.NotificationTriggerInput,
+  triggerDate: Date,
   title: string,
   body: string,
   data?: Record<string, any>
 ): Promise<string | null> {
   try {
     const notificationId = await Notifications.scheduleNotificationAsync({
-      trigger,
       content: {
         title,
         body,
         data: data || {},
         sound: true,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: triggerDate.getTime(),
       },
     });
     return notificationId;
