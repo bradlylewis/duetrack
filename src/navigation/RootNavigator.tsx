@@ -1,101 +1,73 @@
 import React from 'react';
 import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
-import { NavigationParamList } from '@/src/types';
+import { HomeStack } from './HomeStack';
+import { HistoryStack } from './HistoryStack';
+import { SettingsStack } from './SettingsStack';
+import { AddBillScreen } from '../screens/AddBillScreen';
+import { linkingConfiguration } from './LinkingConfiguration';
+import { colors } from '../styles/colors';
+import type { RootTabParamList } from './types';
 
-// Placeholder screens
-const HomeScreen = () => <Text>Home / Dashboard</Text>;
-const AddBillScreen = () => <Text>Add Bill</Text>;
-const EditBillScreen = () => <Text>Edit Bill</Text>;
-const BillDetailsScreen = () => <Text>Bill Details</Text>;
-const HistoryScreen = () => <Text>History</Text>;
-const SettingsScreen = () => <Text>Settings</Text>;
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
-const Stack = createNativeStackNavigator<NavigationParamList>();
-const Tab = createBottomTabNavigator();
-export const navigationRef = React.createRef<NavigationContainerRef<any>>();
+export const navigationRef = React.createRef<NavigationContainerRef<RootTabParamList>>();
 
-function HomeStack() {
+export const RootNavigator: React.FC = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ title: 'Bill Tracker', headerShown: false }}
-      />
-      <Stack.Screen name="BillDetails" component={BillDetailsScreen} />
-      <Stack.Screen name="EditBill" component={EditBillScreen} />
-    </Stack.Navigator>
-  );
-}
-
-function AddBillStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="AddBill" component={AddBillScreen} options={{ title: 'Add Bill' }} />
-    </Stack.Navigator>
-  );
-}
-
-function HistoryStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />
-    </Stack.Navigator>
-  );
-}
-
-function SettingsStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{ title: 'Settings' }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-export const RootNavigator = () => {
-  return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} linking={linkingConfiguration}>
       <Tab.Navigator
         screenOptions={{
-          headerShown: false,
-          tabBarLabelStyle: { marginBottom: 6 },
+          headerShown: true,
+          tabBarActiveTintColor: colors.tabBarActive,
+          tabBarInactiveTintColor: colors.tabBarInactive,
+          tabBarStyle: {
+            backgroundColor: colors.tabBarBackground,
+            borderTopColor: colors.tabBarBorder,
+            borderTopWidth: 1,
+          },
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerShadowVisible: false,
         }}
       >
         <Tab.Screen
-          name="HomeTab"
+          name="Home"
           component={HomeStack}
           options={{
-            tabBarLabel: 'Dashboard',
-            tabBarIcon: () => <Text>📊</Text>,
+            title: 'Dashboard',
+            headerShown: false,
+            tabBarLabel: 'Home',
+            tabBarIcon: () => <Text>🏠</Text>,
           }}
         />
         <Tab.Screen
-          name="AddBillTab"
-          component={AddBillStack}
+          name="AddBill"
+          component={AddBillScreen}
           options={{
-            tabBarLabel: 'Add Bill',
+            title: 'Add Bill',
+            tabBarLabel: 'Add',
             tabBarIcon: () => <Text>➕</Text>,
           }}
         />
         <Tab.Screen
-          name="HistoryTab"
+          name="History"
           component={HistoryStack}
           options={{
+            title: 'History',
+            headerShown: false,
             tabBarLabel: 'History',
             tabBarIcon: () => <Text>📜</Text>,
           }}
         />
         <Tab.Screen
-          name="SettingsTab"
+          name="Settings"
           component={SettingsStack}
           options={{
+            title: 'Settings',
+            headerShown: false,
             tabBarLabel: 'Settings',
             tabBarIcon: () => <Text>⚙️</Text>,
           }}
