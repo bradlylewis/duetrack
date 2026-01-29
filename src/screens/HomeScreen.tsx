@@ -92,23 +92,43 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     return { overdue, thisWeek, later };
   };
 
-  const renderBillGroup = (title: string, groupBills: Bill[], color: string) => {
-    if (groupBills.length === 0) return null;
+  const getEmptyMessage = (groupType: 'overdue' | 'thisWeek' | 'later'): string => {
+    switch (groupType) {
+      case 'overdue':
+        return "You're all caught up!";
+      case 'thisWeek':
+        return 'Nothing due this week';
+      case 'later':
+        return 'No upcoming bills';
+    }
+  };
 
+  const renderBillGroup = (
+    title: string, 
+    groupBills: Bill[], 
+    color: string, 
+    groupType: 'overdue' | 'thisWeek' | 'later'
+  ) => {
     return (
       <View style={styles.group}>
         <Text style={[styles.groupTitle, { color }]}>
           {title} ({groupBills.length})
         </Text>
-        {groupBills.map((bill) => (
-          <BillCard
-            key={bill.id}
-            bill={bill}
-            onPress={() =>
-              navigation.navigate('BillDetails', { billId: bill.id })
-            }
-          />
-        ))}
+        {groupBills.length === 0 ? (
+          <View style={styles.emptyGroupContainer}>
+            <Text style={styles.emptyGroupText}>{getEmptyMessage(groupType)}</Text>
+          </View>
+        ) : (
+          groupBills.map((bill) => (
+            <BillCard
+              key={bill.id}
+              bill={bill}
+              onPress={() =>
+                navigation.navigate('BillDetails', { billId: bill.id })
+              }
+            />
+          ))
+        )}
       </View>
     );
   };
@@ -159,9 +179,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           />
         )}
         
-        {renderBillGroup('Overdue', overdue, colors.error)}
-        {renderBillGroup('This Week', thisWeek, colors.warning)}
-        {renderBillGroup('Later', later, colors.textSecondary)}
+        {renderBillGroup('Overdue', overdue, colors.error, 'overdue')}
+        {renderBillGroup('This Week', thisWeek, colors.warning, 'thisWeek')}
+        {renderBillGroup('Later', later, colors.textSecondary, 'later')}
       </ScrollView>
     </Layout>
   );
@@ -208,5 +228,18 @@ const styles = StyleSheet.create({
     ...typography.styles.h3,
     marginBottom: spacing.md,
     fontWeight: '700',
+  },
+  emptyGroupContainer: {
+    padding: spacing.lg,
+    backgroundColor: colors.background,
+    borderRadius: spacing.borderRadius.base,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  emptyGroupText: {
+    ...typography.styles.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

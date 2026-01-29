@@ -51,6 +51,7 @@ export const BillForm: React.FC<BillFormProps> = ({
   const [notes, setNotes] = useState(initialValues?.notes || '');
   const [iconKey, setIconKey] = useState(initialValues?.iconKey || '💵');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -68,10 +69,14 @@ export const BillForm: React.FC<BillFormProps> = ({
   };
 
   const handleSubmit = () => {
+    if (isSubmitting) return;
+    
     if (!validate()) {
       Alert.alert('Validation Error', 'Please fill in all required fields');
       return;
     }
+
+    setIsSubmitting(true);
 
     const values: BillFormValues = {
       name: name.trim(),
@@ -83,7 +88,12 @@ export const BillForm: React.FC<BillFormProps> = ({
       iconKey,
     };
 
-    onSubmit(values);
+    try {
+      onSubmit(values);
+    } finally {
+      // Reset after a brief delay
+      setTimeout(() => setIsSubmitting(false), 500);
+    }
   };
 
   const formatDate = (date: Date): string => {
@@ -217,7 +227,30 @@ export const BillForm: React.FC<BillFormProps> = ({
             Icon <Text style={styles.required}>*</Text>
           </Text>
           <View style={styles.iconGrid}>
-            {['💵', '💡', '📱', '🏠', '🚗', '🍔', '💳', '📺'].map((icon) => (
+            {[
+              // Utilities
+              '💡', '💧', '🔥', '📡', '📺', '🗑️',
+              // Communication
+              '📱', '☎️', '📞',
+              // Housing
+              '🏠', '🏡', '🏘️', '🔑',
+              // Transport
+              '🚗', '⛽', '🚕', '🚙',
+              // Food & Dining
+              '🍔', '🍕', '☕', '🥗',
+              // Finance
+              '💳', '💰', '💵', '🏦', '💸',
+              // Subscriptions
+              '🎵', '🎮', '🎬', '📚', '💪',
+              // Health & Insurance
+              '🏥', '💊', '🩺',
+              // Family & Education
+              '👶', '🎓', '📖',
+              // Pets
+              '🐕', '🐈',
+              // Other
+              '📦', '🎁', '⭐'
+            ].map((icon) => (
               <TouchableOpacity
                 key={icon}
                 style={[
@@ -255,14 +288,22 @@ export const BillForm: React.FC<BillFormProps> = ({
           <TouchableOpacity
             style={[styles.button, styles.buttonSecondary]}
             onPress={onCancel}
+            disabled={isSubmitting}
           >
             <Text style={styles.buttonTextSecondary}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, styles.buttonPrimary]}
+            style={[
+              styles.button, 
+              styles.buttonPrimary,
+              isSubmitting && styles.buttonDisabled
+            ]}
             onPress={handleSubmit}
+            disabled={isSubmitting}
           >
-            <Text style={styles.buttonTextPrimary}>{submitLabel}</Text>
+            <Text style={styles.buttonTextPrimary}>
+              {isSubmitting ? 'Saving...' : submitLabel}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -401,6 +442,10 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: {
     backgroundColor: colors.primary,
+  },
+  buttonDisabled: {
+    backgroundColor: colors.textPlaceholder,
+    opacity: 0.6,
   },
   buttonSecondary: {
     backgroundColor: colors.gray200,

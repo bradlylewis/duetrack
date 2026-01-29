@@ -179,7 +179,7 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.icon}>{bill.iconKey}</Text>
-            <Text style={styles.name}>{bill.name}</Text>
+            <Text style={styles.name} numberOfLines={3}>{bill.name}</Text>
           </View>
 
           <View style={styles.section}>
@@ -306,6 +306,8 @@ const styles = StyleSheet.create({
     ...typography.styles.h2,
     color: colors.text,
     textAlign: 'center',
+    flexWrap: 'wrap',
+    paddingHorizontal: spacing.md,
   },
   section: {
     backgroundColor: colors.white,
