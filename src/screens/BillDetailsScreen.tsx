@@ -35,14 +35,10 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       setLoading(true);
       const fetchedBill = await getBillById(billId);
-      console.log('Fetched bill:', fetchedBill);
       setBill(fetchedBill);
       
       // Load payment history
-      console.log('Fetching payments for billId:', billId);
       const fetchedPayments = await getPaymentsForBill(billId);
-      console.log('Loaded payments:', fetchedPayments);
-      console.log('Number of payments:', fetchedPayments.length);
       setPayments(fetchedPayments);
     } catch (error) {
       console.error('Error loading bill:', error);
