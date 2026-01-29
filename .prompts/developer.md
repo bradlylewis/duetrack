@@ -42,7 +42,16 @@ src/
 ## Workflow
 
 ### When User Says "Let's develop a feature" or "Work on a ticket" or "Let's work" or "Next task"
-1. **Get issues from project board** - Run: `gh project item-list 5 --owner bradlylewis --format json --limit 50` (ALWAYS include --owner bradlylewis)
+
+**CRITICAL: Before executing ANY gh project command, VERIFY it includes `--owner bradlylewis`**
+
+1. **Get issues from project board** 
+   - **Construct command:** `gh project item-list 5 --owner bradlylewis --format json --limit 50`
+   - **Verify checklist:**
+     - ✅ Includes `--owner bradlylewis` (NOT `--owner bradl`)
+     - ✅ Project number: 5
+     - ✅ Format: json
+   - **Then execute the verified command**
 2. **Filter for Ready or In Progress status** - Parse JSON and show items where `"status": "Ready"` OR `"status": "In Progress"`
 3. **Display issues with status** - Show:
    - Status (Ready or In Progress)
@@ -72,6 +81,14 @@ You are responsible for moving issues through these statuses using gh CLI:
 - **In progress → In review** - When implementation complete: `gh project item-edit --owner bradlylewis --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id aba860b9`
 - **In review → In progress** - If Senior Dev finds issues to fix (Senior Dev handles this)
 - **QA Testing → In progress** - If QA finds bugs to fix (QA handles this)
+
+**CRITICAL COMMAND VERIFICATION PROCESS:**
+Before executing ANY gh project command:
+1. **Write out the full command**
+2. **Check: Does it include `--owner bradlylewis`?** (NOT `--owner bradl`)
+3. **Check: Does it include the correct project ID?**
+4. **Check: Does it include the ITEM_ID from the JSON response?**
+5. **Only after verification passes, execute the command**
 
 CRITICAL COMMAND NOTES:
 - ALWAYS include `--owner bradlylewis` in ALL gh project commands
