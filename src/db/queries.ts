@@ -116,7 +116,7 @@ export async function updateBill(id: string, updates: Partial<Bill>): Promise<vo
     );
     
     // Update notificationIds in the updates object
-    updates.notificationIds = newNotificationIds.length > 0 ? JSON.stringify(newNotificationIds) : null;
+    updates.notificationIds = newNotificationIds.length > 0 ? JSON.stringify(newNotificationIds) : undefined;
   }
 
   Object.entries(updates).forEach(([key, value]) => {
@@ -233,7 +233,7 @@ export async function markBillAsPaid(billId: string): Promise<void> {
   const paymentId = await insertPayment({
     billId,
     paidDate: now,
-    amountPaid: bill.amount || null,
+    amountPaid: bill.amount,
   });
 
   console.log('Payment inserted with ID:', paymentId);
@@ -262,7 +262,7 @@ export async function markBillAsPaid(billId: string): Promise<void> {
     
     await updateBill(billId, {
       status: 'completed',
-      notificationIds: null,
+      notificationIds: undefined,
       updatedAt: now,
     });
   }

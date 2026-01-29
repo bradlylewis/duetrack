@@ -6,11 +6,7 @@ export async function initializeNotifications(): Promise<void> {
   try {
     // Request permission
     const permission = await Notifications.requestPermissionsAsync();
-    const isGranted =
-      permission.granted ||
-      (Platform.OS === 'ios' &&
-        permission.ios?.status ===
-          Notifications.IosNotificationPermissionStatus.PROVISIONAL);
+    const isGranted = permission.granted;
 
     console.log(`Notification permission: ${isGranted ? 'granted' : 'denied'}`);
 
@@ -23,6 +19,8 @@ export async function initializeNotifications(): Promise<void> {
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
       }),
     });
   } catch (error) {
@@ -95,7 +93,7 @@ export async function cancelNotificationAsync(notificationId: string): Promise<v
 }
 
 export async function getScheduledNotificationsAsync(): Promise<
-  Notifications.ScheduledLocalNotification[]
+  Notifications.NotificationRequest[]
 > {
   try {
     const notifications = await Notifications.getAllScheduledNotificationsAsync();
@@ -110,7 +108,7 @@ export function setupNotificationListeners(onNotificationTapped: (billId: string
   // When notification is tapped
   Notifications.addNotificationResponseReceivedListener((response) => {
     const billId = response.notification.request.content.data?.billId;
-    if (billId) {
+    if (billId && typeof billId === 'string') {
       onNotificationTapped(billId);
     }
   });
