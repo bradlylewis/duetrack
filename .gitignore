@@ -13,3 +13,11 @@ dist/
 *.orig.*
 web-build/
 .turbo
+
+# IDE
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.vscode/
