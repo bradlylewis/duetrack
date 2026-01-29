@@ -8,8 +8,6 @@ export async function initializeNotifications(): Promise<void> {
     const permission = await Notifications.requestPermissionsAsync();
     const isGranted = permission.granted;
 
-    console.log(`Notification permission: ${isGranted ? 'granted' : 'denied'}`);
-
     // Store permission status
     await setAppMeta('notification_permission_status', isGranted ? 'granted' : 'denied');
 
