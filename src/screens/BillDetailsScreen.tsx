@@ -10,19 +10,20 @@ import {
 } from 'react-native';
 import { Layout } from '../components/Layout';
 import { BillForm, BillFormValues } from '../components/BillForm';
-import { getBillById, updateBill, deleteBill } from '../db/queries';
+import { getBillById, updateBill, deleteBill, markBillAsPaid, getPaymentsForBill } from '../db/queries';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../navigation/types';
-import type { Bill } from '../types';
+import type { Bill, Payment } from '../types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'BillDetails'>;
 
 export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { billId } = route.params;
   const [bill, setBill] = useState<Bill | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -34,7 +35,15 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       setLoading(true);
       const fetchedBill = await getBillById(billId);
+      console.log('Fetched bill:', fetchedBill);
       setBill(fetchedBill);
+      
+      // Load payment history
+      console.log('Fetching payments for billId:', billId);
+      const fetchedPayments = await getPaymentsForBill(billId);
+      console.log('Loaded payments:', fetchedPayments);
+      console.log('Number of payments:', fetchedPayments.length);
+      setPayments(fetchedPayments);
     } catch (error) {
       console.error('Error loading bill:', error);
       Alert.alert('Error', 'Failed to load bill details');
@@ -87,6 +96,29 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             } catch (error) {
               console.error('Error deleting bill:', error);
               Alert.alert('Error', 'Failed to delete bill');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleMarkPaid = () => {
+    Alert.alert(
+      'Mark as Paid',
+      'Mark this bill as paid for this month?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Mark Paid',
+          onPress: async () => {
+            try {
+              await markBillAsPaid(billId);
+              await loadBill();
+              Alert.alert('Success', 'Bill marked as paid!');
+            } catch (error) {
+              console.error('Error marking bill as paid:', error);
+              Alert.alert('Error', 'Failed to mark bill as paid');
             }
           },
         },
@@ -190,6 +222,33 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </View>
 
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Payment History</Text>
+            {payments.length > 0 ? (
+              payments.map((payment) => (
+                <View key={payment.id} style={styles.paymentRow}>
+                  <Text style={styles.label}>
+                    {formatDate(payment.paidDate)}
+                  </Text>
+                  <Text style={styles.value}>
+                    {payment.amountPaid ? `$${payment.amountPaid.toFixed(2)}` : 'N/A'}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyHistoryText}>No payment history yet</Text>
+            )}
+          </View>
+
+          {bill.status === 'active' && (
+            <TouchableOpacity
+              style={[styles.button, styles.markPaidButton]}
+              onPress={handleMarkPaid}
+            >
+              <Text style={styles.buttonText}>✓ Mark as Paid</Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.actions}>
             <TouchableOpacity
               style={[styles.button, styles.editButton]}
@@ -290,8 +349,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: spacing.borderRadius.base,
   },
+  markPaidButton: {
+    backgroundColor: colors.success,
+    marginBottom: spacing.lg,
+  },
   editButton: {
     backgroundColor: colors.primary,
+  },
+  sectionTitle: {
+    ...typography.styles.h3,
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  paymentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  emptyHistoryText: {
+    ...typography.styles.body,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: spacing.md,
   },
   deleteButton: {
     backgroundColor: colors.white,

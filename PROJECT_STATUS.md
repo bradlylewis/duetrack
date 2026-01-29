@@ -25,7 +25,9 @@
 2. [002-navigation-shell.md](backlog/tickets/002-navigation-shell.md) – ✅ IMPLEMENTED
 3. [003-db-schema.md](backlog/tickets/003-db-schema.md) – ✅ IMPLEMENTED (completed in Ticket 001)
 4. [004-bills-crud.md](backlog/tickets/004-bills-crud.md) – ✅ IMPLEMENTED
-5. [005-dashboard-upcoming.md](backlog/tickets/005-dashboard-upcoming.md) – Ready
+5. [005-dashboard-upcoming.md](backlog/tickets/005-dashboard-upcoming.md) – ✅ IMPLEMENTED
+6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – ✅ IMPLEMENTED
+7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – Ready
 7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
 8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – Ready
@@ -145,17 +147,42 @@ src/
     └── queries.ts (updated to use expo-crypto for UUIDs)
 ```
 
+### ✅ 9. Ticket 005 & 006 Implementation
+**Status:** ✅ COMPLETE
+
+**Ticket 005 (Dashboard):**
+- Already implemented in Ticket 004 - HomeScreen groups bills by urgency
+- Pull-to-refresh working
+- Empty states present
+
+**Ticket 006 (Mark Paid & History):**
+- Mark as Paid button on BillDetailsScreen (active bills only)
+- Monthly rollover logic: Jan 31 → Feb 28/29 automatically
+- One-time bills marked as "completed" when paid
+- Payment history displayed with date and amount
+- Confirmation dialog before marking paid
+- Dashboard refreshes automatically after marking paid
+
+**Code Structure:**
+```
+src/
+├── db/
+│   └── queries.ts (added calculateNextDueDate, markBillAsPaid, getPaymentsForBill)
+└── screens/
+    └── BillDetailsScreen.tsx (added Mark Paid button, payment history display)
+```
+
 ---
 
 ## 📊 Project Overview
 
 ### MVP Scope (IN)
 - ✅ Bills CRUD (add, edit, delete with metadata)
-- 🔄 Dashboard with urgency grouping (Overdue / This Week / Later) - Partially complete
-- ⏳ Mark paid (with monthly rollover rule)
+- ✅ Dashboard with urgency grouping (Overdue / This Week / Later)
+- ✅ Mark paid (with monthly rollover rule)
 - ⏳ Local notifications (3 days before + day-of at 9 AM)
 - ⏳ Icon picker (30 built-in icons)
-- ⏳ Payment history tracking
+- ✅ Payment history tracking
 
 ### Out of Scope (NOT in MVP)
 - Bank integrations
@@ -178,21 +205,13 @@ src/
 
 ## 🚀 Next Steps
 
-### Immediate (Ticket 005)
-**Ticket 005:** Dashboard – Upcoming Bills View
-- Refine bill grouping logic (already implemented in HomeScreen)
-- Add sorting within groups
-- Verify urgency calculations are accurate
-- Polish UI and spacing
+### Immediate (Ticket 007)
+**Ticket 007:** Notification Permissions
+- Request notification permissions on app launch
+- Show banner if permissions denied
+- Link to Settings to enable permissions
 
-### Implementation Phase (Tickets 005–008)
-
-5. **Ticket 005:** Dashboard – Upcoming Bills View
-   - Implement bill grouping (Overdue / This Week / Later)
-   - Add sorting and filtering
-   - Display bill cards with icon, name, date, amount
-
-6. **Ticket 006:** Mark Paid & Payment History
+### Implementation Phase (Tickets 007–008)
    - Implement Mark Paid action
    - Calculate monthly rollover (Jan 31 → Feb 28/29)
    - Show payment history on bill details
