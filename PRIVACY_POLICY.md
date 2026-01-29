@@ -1,18 +1,18 @@
-# Privacy Policy for Bill Tracker
+# Privacy Policy for DueTrack
 
 **Last Updated:** January 29, 2026
 
 ## Introduction
 
-Bill Tracker ("we," "our," or "the app") is committed to protecting your privacy. This Privacy Policy explains how we handle your information when you use our mobile application.
+DueTrack ("we," "our," or "the app") is committed to protecting your privacy. This Privacy Policy explains how we handle your information when you use our mobile application.
 
 ## Data Storage
 
-**All data is stored locally on your device.** Bill Tracker uses local SQLite database storage on your device to save your bills, payment history, and app settings. Your data never leaves your device and is not transmitted to any servers or third parties.
+**All data is stored locally on your device.** DueTrack uses local SQLite database storage on your device to save your bills, payment history, and app settings. Your data never leaves your device and is not transmitted to any servers or third parties.
 
 ## Data Collection
 
-**We do not collect any personal data.** Bill Tracker does not:
+**We do not collect any personal data.** DueTrack does not:
 - Collect personal information (name, email, phone number, etc.)
 - Track your usage or behavior
 - Use analytics or tracking services
@@ -30,7 +30,7 @@ The following information is stored only on your device:
 
 ## Permissions
 
-Bill Tracker requests the following permissions:
+DueTrack requests the following permissions:
 
 ### Notifications
 - **Purpose:** To send you reminders about upcoming bill payments
@@ -75,7 +75,7 @@ There is no server-side data to delete since all information is stored locally o
 
 ## Children's Privacy
 
-Bill Tracker does not knowingly collect any information from children. The app is designed for general audiences and does not require personal information from any users, including children.
+DueTrack does not knowingly collect any information from children. The app is designed for general audiences and does not require personal information from any users, including children.
 
 ## Changes to This Privacy Policy
 
@@ -83,7 +83,7 @@ We may update this Privacy Policy from time to time. Any changes will be reflect
 
 ## Third-Party Services
 
-Bill Tracker does not integrate with any third-party services, analytics tools, or advertising networks.
+DueTrack does not integrate with any third-party services, analytics tools, or advertising networks.
 
 ## Contact Us
 
