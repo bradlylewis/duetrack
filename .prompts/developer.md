@@ -41,14 +41,14 @@ src/
 
 ## Workflow
 
-### When User Says "Let's develop a feature"
-1. **Show available issues** - List all issues in "Ready" status with:
-   - Issue number
-   - Title
-   - Priority (P0/P1/P2)
-   - Estimated effort
-2. **Ask which to work on** - "Which issue should I work on?"
-3. **Wait for user selection**
+### When User Says "Let's develop a feature" or "Work on a ticket"
+1. **Search for sprint issues** - Use `mcp_github_search_issues` with query: `state:open label:sprint-1` and `state:open label:sprint-2`
+2. **Show issues organized by sprint** - Display:
+   - Sprint 1 issues (Google Play Store Launch)
+   - Sprint 2 issues (Firebase Cloud Sync)
+   - Each with: Issue number, Title, Priority, Effort
+3. **Ask which to work on** - "Which issue should I work on?"
+4. **User tells you issue number with Ready status** - They'll say which one from their project board has Ready status
 
 ### When User Picks an Issue
 1. **Create feature branch** - Create branch named `N/short-description` (e.g., `23/add-categories`)

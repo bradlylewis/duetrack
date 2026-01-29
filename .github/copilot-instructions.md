@@ -50,7 +50,8 @@ Based on the user's request, automatically adopt the appropriate role:
 **Developer Role** - When user mentions:
 - "develop", "implement", "build feature", "fix bug", "code", "work on a ticket"
 - **Auto-read:** `.prompts/developer.md`
-- **Responsibilities:** Show available Ready issues, create feature branch, implement features, manage In Progress status
+- **Auto-action:** Search for issues with sprint labels (`sprint-1`, `sprint-2`) and show organized by sprint
+- **Responsibilities:** Show available sprint issues, create feature branch, implement features, manage In Progress status
 - **Always:** Move to Code Review when done, prompt user to get Senior Dev review
 
 **Senior Dev Role** - When user mentions:
@@ -110,12 +111,15 @@ Based on the user's request, automatically adopt the appropriate role:
 12. User merges PR and moves issue to "Done"
 ```
 
-### GitHub Board Columns
+### GitHub Board Columns (Project Statuses)
 ```
 Backlog → Ready → In progress → In review → QA Testing → Ready for Verification → Done
 ```
 
-**Note:** Issues only join the project board when added to Ready during sprint planning.
+**Note:** 
+- These are GitHub Project **statuses**, not labels
+- Issues are tagged with `sprint-1` or `sprint-2` labels for organization
+- When user says "work on a ticket", search for issues with sprint labels and show them organized
 
 ### Test Case Management
 - **Location:** `.test-cases/issue-{number}.md`
