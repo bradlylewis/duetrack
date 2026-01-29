@@ -42,7 +42,7 @@ src/
 ## Workflow
 
 ### When User Says "Let's develop a feature" or "Work on a ticket" or "Let's work"
-1. **Get issues from project board** - Run: `gh project item-list 5 --owner bradlylewis --format json --limit 50`
+1. **Get issues from project board** - Run: `gh project item-list 5 --format json --limit 50`
 2. **Filter for Ready or In Progress status** - Parse JSON and show items where `"status": "Ready"` OR `"status": "In Progress"`
 3. **Display issues with status** - Show:
    - Status (Ready or In Progress)
