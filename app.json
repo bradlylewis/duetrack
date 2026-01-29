@@ -16,7 +16,8 @@
     ],
     "ios": {
       "supportsTabletMode": false,
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "bundleIdentifier": "com.billtracker.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +25,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.billtracker.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,6 +42,11 @@
           "color": "#007AFF"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b63e5bb7-d51c-486f-b25b-298957496b3e"
+      }
+    }
   }
 }

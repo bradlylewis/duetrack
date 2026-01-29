@@ -174,15 +174,11 @@ export async function insertPayment(
   const id = Crypto.randomUUID();
   const now = Date.now();
 
-  console.log('Inserting payment:', { id, billId: payment.billId, paidDate: payment.paidDate, amountPaid: payment.amountPaid, createdAt: now });
-
   await runAsync(
     `INSERT INTO payments (id, billId, paidDate, amountPaid, createdAt)
      VALUES (?, ?, ?, ?, ?)`,
     [id, payment.billId, payment.paidDate, payment.amountPaid || null, now]
   );
-
-  console.log('Payment inserted successfully');
 
   return id;
 }
@@ -192,8 +188,6 @@ export async function getPaymentsForBill(billId: string): Promise<Payment[]> {
     'SELECT * FROM payments WHERE billId = ? ORDER BY paidDate DESC',
     [billId]
   );
-
-  console.log('Raw payment results from DB:', results);
 
   return results.map((row) => ({
     ...row,
@@ -227,8 +221,6 @@ export async function markBillAsPaid(billId: string): Promise<void> {
 
   const now = Date.now();
 
-  console.log('Marking bill as paid:', billId, 'Amount:', bill.amount);
-
   // Insert payment record
   const paymentId = await insertPayment({
     billId,
@@ -236,14 +228,10 @@ export async function markBillAsPaid(billId: string): Promise<void> {
     amountPaid: bill.amount,
   });
 
-  console.log('Payment inserted with ID:', paymentId);
-
   // Update bill based on frequency
   if (bill.frequency === 'monthly') {
     // Calculate next due date with rollover
     const nextDueDate = calculateNextDueDate(bill.dueDate);
-    
-    console.log('Monthly bill - advancing due date from', new Date(bill.dueDate), 'to', new Date(nextDueDate));
     
     // updateBill will automatically reschedule notifications
     await updateBill(billId, {
@@ -252,7 +240,6 @@ export async function markBillAsPaid(billId: string): Promise<void> {
     });
   } else {
     // One-time bill: mark as completed and cancel notifications
-    console.log('One-time bill - marking as completed');
     
     // Cancel notifications since bill is completed
     if (bill.notificationIds) {

@@ -59,7 +59,6 @@ export async function scheduleBillNotifications(
       if (id) notificationIds.push(id);
     }
     
-    console.log(`Scheduled ${notificationIds.length} notifications for bill: ${billName}`);
     return notificationIds;
   } catch (error) {
     console.error('Error scheduling bill notifications:', error);
@@ -77,8 +76,6 @@ export async function cancelBillNotifications(notificationIds: string[]): Promis
     await Promise.all(
       notificationIds.map((id) => cancelNotificationAsync(id))
     );
-    
-    console.log(`Canceled ${notificationIds.length} notifications`);
   } catch (error) {
     console.error('Error canceling notifications:', error);
   }

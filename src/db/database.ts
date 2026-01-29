@@ -68,8 +68,6 @@ export async function initDatabase(): Promise<void> {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       await setAppMeta('current_timezone', timezone);
     }
-
-    console.log('Database schema initialized successfully');
   } catch (error) {
     console.error('Error initializing database schema:', error);
     throw error;

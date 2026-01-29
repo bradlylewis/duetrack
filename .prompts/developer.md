@@ -53,8 +53,8 @@ src/
 4. **Ask which to work on** - "Which issue should I work on?"
 
 ### When User Picks an Issue
-1. **Create feature branch** - Create branch named `N/short-description` (e.g., `23/add-categories`)
-2. **Move issue to "In progress"** - Run: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In progress"`
+1. **Create feature branch** - Create branch named `BA-N` (e.g., `BA-4`, `BA-23`)
+2. **Move issue to "In progress"** - Run: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id 47fc9ee4`
    - Get ITEM_ID from the project item-list JSON response
 3. **Read the issue** - Understand user story and acceptance criteria
 4. **Check existing code** - Review related files, understand patterns
@@ -68,8 +68,8 @@ src/
 
 ### Board Status Management
 You are responsible for moving issues through these statuses using gh CLI:
-- **Ready → In progress** - When you start work: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In progress"`
-- **In progress → In review** - When implementation complete: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In review"`
+- **Ready → In progress** - When you start work: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id 47fc9ee4`
+- **In progress → In review** - When implementation complete: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id aba860b9`
 - **In review → In progress** - If Senior Dev finds issues to fix (Senior Dev handles this)
 - **QA Testing → In progress** - If QA finds bugs to fix (QA handles this)
 
