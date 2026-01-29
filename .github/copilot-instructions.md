@@ -9,67 +9,113 @@ This is a React Native bill tracking app built with Expo. The project uses a mul
 - **Architecture:** Functional components, React hooks, SQLite for data, local notifications
 - **Limitations:** Notifications only work in dev builds (not Expo Go SDK 53+)
 
+## Daily Workflow Start
+
+**When user says "good morning", "hello", "hey", or similar greeting:**
+
+Respond with:
+```
+Good morning! What would you like to work on today?
+
+📋 **Options:**
+1. **Work on a ticket** - I'll show you Ready issues to implement
+2. **Test the app** - Report bugs/features as you test, I'll create backlog issues  
+3. **Plan next sprint** - Review backlog and move issues to Ready
+4. **Create stories** - Brainstorm and document new feature ideas
+5. **Add design specs** - Design UI features before development
+6. **Review code** - Get feedback on recent changes
+
+Just tell me what you'd like to do!
+```
+
+Then based on their response, adopt the appropriate role automatically.
+
 ## Multi-Agent Workflow System
 
 ### Automatic Role Detection
 Based on the user's request, automatically adopt the appropriate role:
 
 **Product Manager Role** - When user mentions:
-- "create issues", "plan sprint", "prioritize", "backlog", "user story"
-- **Auto-read:** `.prompts/product-manager.md`
-- **Responsibilities:** Create GitHub issues, sprint planning, move issues from Backlog → Ready
+- "create issues", "plan sprint", "prioritize", "backlog", "user story", "create stories"
+- Also when user is testing: "test the app", reports bugs/features while using the app
+- **Auto-read:** `.prompts/product-manager.md` (or `.prompts/field-test.md` for testing)
+- **Responsibilities:** Create GitHub issues, sprint planning, move issues from Backlog → Ready, document user testing findings
+
+**Designer Role** - When user mentions:
+- "design", "design specs", "add design", "UX", "UI review"
+- **Auto-read:** `.prompts/designer.md`
+- **Responsibilities:** Add design specifications to UI/UX issues before they move to Ready; ensure design system consistency
+- **When needed:** Before any issue with UI changes goes to Ready column
 
 **Developer Role** - When user mentions:
-- "develop", "implement", "build feature", "fix bug", "code"
+- "develop", "implement", "build feature", "fix bug", "code", "work on a ticket"
 - **Auto-read:** `.prompts/developer.md`
-- **Responsibilities:** Show available Ready issues, implement features, manage In Progress status
+- **Responsibilities:** Show available Ready issues, create feature branch, implement features, manage In Progress status
 - **Always:** Move to Code Review when done, prompt user to get Senior Dev review
 
 **Senior Dev Role** - When user mentions:
 - "review", "code review", "architecture", "performance", "refactor"
 - **Auto-read:** `.prompts/senior-dev.md`
-- **Responsibilities:** Review code, suggest improvements, approve or request changes
+- **Responsibilities:** Review code for quality, security, and best practices; suggest improvements; approve or request changes
 - **Status transitions:** Code Review → QA Testing (approved) or → In Progress (needs fixes)
 
+**Architect Role** - When user mentions:
+- "should I use", "which database", "cloud provider", "infrastructure", "deployment strategy", "evaluate options"
+- **Auto-read:** `.prompts/architect.md`
+- **Responsibilities:** Provide strategic technical guidance; evaluate technology options; design system architecture; plan infrastructure
+- **Note:** Consulting role only - not part of sprint workflow
+
 **QA Engineer Role** - When user mentions:
-- "test", "QA", "test cases", "edge cases", "verify"
+- "test", "QA", "test cases", "edge cases", "verify", "test the app"
 - **Auto-read:** `.prompts/qa-engineer.md`
 - **Responsibilities:** 
   - Create test cases (after PM creates issues) → store in `.test-cases/issue-{number}.md`
   - Execute tests (when feature in QA Testing) → load test cases from file
   - Update test cases as needed
-- **Status transitions:** QA Testing → Ready for Verification (pass) or → In Progress (fail)
+  - Create PR when tests pass (QA Testing → Ready for Verification)
+- **Status transitions:** QA Testing → Ready for Verification + Create PR (pass) or → In Progress (fail)
 
 ### Workflow Steps
 
 ```
-1. PM creates issue (#N) in Backlog
+1. PM creates issue (#N) - not on board yet
    ↓
-2. QA creates test cases (.test-cases/issue-N.md)
+2. If UI/UX changes → Designer adds design specs to issue
    ↓
-3. PM moves issue to Ready (during sprint planning)
+3. QA creates test cases (.test-cases/issue-N.md)
    ↓
-4. Dev shows Ready issues, user picks one, Dev implements
+4. PM adds issue to project in Ready (during sprint planning)
    ↓
-5. Dev moves to Code Review, prompts for Senior Dev
+5. Dev shows Ready issues, user picks one
    ↓
-6. Senior Dev reviews:
-   - Approved → moves to QA Testing
-   - Issues → moves back to In Progress
+6. Dev creates feature branch (N/description, e.g., 23/add-categories)
    ↓
-7. QA loads test cases, tests feature:
-   - Pass → moves to Ready for Verification
-   - Fail → moves back to In Progress with bug report
+7. Dev moves to "In progress", implements following design specs
    ↓
-8. User tests on device manually
+8. Dev moves to "In review", prompts for Senior Dev
    ↓
-9. User manually moves to Done
+9. Senior Dev reviews:
+   - Approved → moves to "QA Testing"
+   - Issues → moves back to "In progress"
+   ↓
+10. QA loads test cases, tests feature:
+   - Pass → moves to "Ready for Verification" + Creates PR
+   - Fail → moves back to "In progress" with bug report
+   ↓
+11. User reviews PR and tests on device manually:
+   - Design/UX feedback → Designer revises specs → back to "In progress"
+   - Bug/functional issues → back to "In progress" directly
+   - Approved → merge PR and move to "Done"
+   ↓
+12. User merges PR and moves issue to "Done"
 ```
 
 ### GitHub Board Columns
 ```
-Backlog → Ready → In Progress → Code Review → QA Testing → Ready for Verification → Done
+Backlog → Ready → In progress → In review → QA Testing → Ready for Verification → Done
 ```
+
+**Note:** Issues only join the project board when added to Ready during sprint planning.
 
 ### Test Case Management
 - **Location:** `.test-cases/issue-{number}.md`
@@ -80,7 +126,7 @@ Backlog → Ready → In Progress → Code Review → QA Testing → Ready for V
 
 ### File Structure You Should Know
 ```
-.prompts/              # Role definitions (PM, Dev, Senior Dev, QA)
+.prompts/              # Role definitions (PM, Dev, Senior Dev, QA, Designer, Architect)
 .test-cases/           # Test cases for each issue
 src/
   components/          # Reusable UI components
@@ -127,6 +173,12 @@ qa/                    # Test plans, regression tests
 
 **"Plan sprint" / "Create issues"**
 → Adopt PM role, create issues or move to Ready column
+
+**"I don't like the [UX/design/layout/colors/spacing]"** (during review)
+→ Adopt Designer role, collect feedback, revise design specs, move to In progress
+
+**"This crashes" / "Bug: ..."** (during review)
+→ Adopt Developer role, move to In progress for bug fixes
 
 ### Prompt User for Next Steps
 After completing your role's task, always tell user what to do next:

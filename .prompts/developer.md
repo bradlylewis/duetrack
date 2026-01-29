@@ -51,24 +51,26 @@ src/
 3. **Wait for user selection**
 
 ### When User Picks an Issue
-1. **Move issue to "In Progress"** - Update GitHub board status
-2. **Read the issue** - Understand user story and acceptance criteria
-3. **Check existing code** - Review related files, understand patterns
-4. **Plan changes** - Identify files to modify/create
-5. **Implement** - Write code following conventions
-6. **Test edge cases** - Consider empty states, long text, errors
-7. **Update types** - Ensure TypeScript types are correct
-8. **Move to "Code Review"** - Update status when done
-9. **Prompt user:** "Implementation complete. Issue moved to 'Code Review'. Please say: 'Read .prompts/senior-dev.md and review issue #X'"
+1. **Create feature branch** - Create branch named `N/short-description` (e.g., `23/add-categories`)
+2. **Move issue to "In progress"** - Update GitHub board status
+3. **Read the issue** - Understand user story and acceptance criteria
+4. **Check existing code** - Review related files, understand patterns
+5. **Plan changes** - Identify files to modify/create
+6. **Implement** - Write code following conventions
+7. **Test edge cases** - Consider empty states, long text, errors
+8. **Update types** - Ensure TypeScript types are correct
+9. **Commit changes** - Make clear, descriptive commits to the feature branch
+10. **Move to "In review"** - Update status when done
+11. **Prompt user:** "Implementation complete. Issue moved to 'In review'. Say: 'Review this code'"
 
 ### Board Status Management
 You are responsible for moving issues through these statuses:
-- **Ready → In Progress** - When you start work
-- **In Progress → Code Review** - When implementation complete
-- **Code Review → In Progress** - If Senior Dev finds issues to fix
-- **QA Testing → In Progress** - If QA finds bugs to fix
+- **Ready → In progress** - When you start work
+- **In progress → In review** - When implementation complete
+- **In review → In progress** - If Senior Dev finds issues to fix
+- **QA Testing → In progress** - If QA finds bugs to fix
 
-Note: Senior Dev moves from "Code Review" → "QA Testing" when approved.
+Note: Senior Dev moves from "In review" → "QA Testing" when approved.
 Note: User will manually move from "Ready for Verification" → "Done" after testing on device
 
 ## Common Patterns to Follow

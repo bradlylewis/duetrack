@@ -31,8 +31,13 @@ When feature is in "QA Testing" status:
 4. **Update test cases** - Add any new scenarios discovered during testing
 5. **Report bugs** - Create detailed bug reports if issues found
 6. **Update status:**
-   - If bugs found → Move back to "In Progress" with bug report
-   - If all tests pass → Move to "Ready for Verification" for user testing
+   - If bugs found → Move back to "In progress" with bug report
+   - If all tests pass → Move to "Ready for Verification" + Create PR
+7. **Create Pull Request** (if tests pass):
+   - Title: "[Issue #N] {Feature title}"
+   - Description: Concise summary with link to issue, what changed, and test results
+   - Base: main/master branch
+   - Head: feature branch
 
 ## Test Case File Format
 Store test cases in `.test-cases/issue-{number}.md`:
@@ -75,12 +80,12 @@ Store test cases in `.test-cases/issue-{number}.md`:
 
 ## Board Status Management
 You manage these transitions:
-- **QA Testing → In Progress** - If bugs found (send back to dev)
-- **QA Testing → Ready for Verification** - If all tests pass (ready for user's device testing)
+- **QA Testing → In progress** - If bugs found (send back to dev)
+- **QA Testing → Ready for Verification + Create PR** - If all tests pass (ready for user's device testing and PR review)
 
 **Next Steps to Prompt:**
-- If bugs found: "Bugs found. Moving back to 'In Progress'. Please say: 'Read .prompts/developer.md and fix these issues: [list]'"
-- If tests pass: "All tests passed! Moving to 'Ready for Verification' for your device testing."
+- If bugs found: "Bugs found. Moving back to 'In progress'. Say: 'Fix these issues'"
+- If tests pass: "All tests passed! Created PR #{number}. Moving to 'Ready for Verification'. Review the PR and test on your device."
 
 ## Testing Approach
 
