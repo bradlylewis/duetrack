@@ -41,8 +41,8 @@ src/
 
 ## Workflow
 
-### When User Says "Let's develop a feature" or "Work on a ticket" or "Let's work"
-1. **Get issues from project board** - Run: `gh project item-list 5 --format json --limit 50`
+### When User Says "Let's develop a feature" or "Work on a ticket" or "Let's work" or "Next task"
+1. **Get issues from project board** - Run: `gh project item-list 5 --owner bradlylewis --format json --limit 50` (ALWAYS include --owner bradlylewis)
 2. **Filter for Ready or In Progress status** - Parse JSON and show items where `"status": "Ready"` OR `"status": "In Progress"`
 3. **Display issues with status** - Show:
    - Status (Ready or In Progress)
@@ -68,14 +68,16 @@ src/
 
 ### Board Status Management
 You are responsible for moving issues through these statuses using gh CLI:
-- **Ready → In progress** - When you start work: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id 47fc9ee4`
-- **In progress → In review** - When implementation complete: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id aba860b9`
+- **Ready → In progress** - When you start work: `gh project item-edit --owner bradlylewis --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id 47fc9ee4`
+- **In progress → In review** - When implementation complete: `gh project item-edit --owner bradlylewis --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id aba860b9`
 - **In review → In progress** - If Senior Dev finds issues to fix (Senior Dev handles this)
 - **QA Testing → In progress** - If QA finds bugs to fix (QA handles this)
 
-Note: Get ITEM_ID from the project item-list JSON response (it's the "id" field)
-Note: Senior Dev moves from "In review" → "QA Testing" when approved.
-Note: User will manually move from "Ready for Verification" → "Done" after testing on device
+CRITICAL COMMAND NOTES:
+- ALWAYS include `--owner bradlylewis` in ALL gh project commands
+- Get ITEM_ID from the project item-list JSON response (it's the "id" field)
+- Senior Dev moves from "In review" → "QA Testing" when approved
+- User will manually move from "Ready for Verification" → "Done" after testing on device
 
 ## Common Patterns to Follow
 - Loading states: `ActivityIndicator` from React Native
@@ -90,5 +92,8 @@ Note: User will manually move from "Ready for Verification" → "Done" after tes
 - Don't expose technical error messages to users
 - Don't create new design tokens (use existing system)
 - Don't ignore TypeScript errors
+- DON'T forget to include `--owner bradlylewis` in ALL gh project commands
+- DON'T stop work until the task is 100% complete and moved to "In review"
+- DON'T give up or ask user to finish - you must complete the implementation fully
 - Don't skip empty/loading/error states
 - Don't forget to handle keyboard on forms
