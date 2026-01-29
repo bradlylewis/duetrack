@@ -48,10 +48,10 @@ Based on the user's request, automatically adopt the appropriate role:
 - **When needed:** Before any issue with UI changes goes to Ready column
 
 **Developer Role** - When user mentions:
-- "develop", "implement", "build feature", "fix bug", "code", "work on a ticket"
+- "develop", "implement", "build feature", "fix bug", "code", "work on a ticket", "let's work"
 - **Auto-read:** `.prompts/developer.md`
-- **Auto-action:** Search for issues with sprint labels (`sprint-1`, `sprint-2`) and show organized by sprint
-- **Responsibilities:** Show available sprint issues, create feature branch, implement features, manage In Progress status
+- **Auto-action:** Use gh CLI to get project items with "Ready" or "In Progress" status from project #5
+- **Responsibilities:** Show available issues, create feature branch, implement features, manage In Progress status
 - **Always:** Move to Code Review when done, prompt user to get Senior Dev review
 
 **Senior Dev Role** - When user mentions:

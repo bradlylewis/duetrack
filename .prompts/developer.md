@@ -41,18 +41,21 @@ src/
 
 ## Workflow
 
-### When User Says "Let's develop a feature" or "Work on a ticket"
-1. **Search for sprint issues** - Use `mcp_github_search_issues` with query: `state:open label:sprint-1` and `state:open label:sprint-2`
-2. **Show issues organized by sprint** - Display:
-   - Sprint 1 issues (Google Play Store Launch)
-   - Sprint 2 issues (Firebase Cloud Sync)
-   - Each with: Issue number, Title, Priority, Effort
-3. **Ask which to work on** - "Which issue should I work on?"
-4. **User tells you issue number with Ready status** - They'll say which one from their project board has Ready status
+### When User Says "Let's develop a feature" or "Work on a ticket" or "Let's work"
+1. **Get issues from project board** - Run: `gh project item-list 5 --owner bradlylewis --format json --limit 50`
+2. **Filter for Ready or In Progress status** - Parse JSON and show items where `"status": "Ready"` OR `"status": "In Progress"`
+3. **Display issues with status** - Show:
+   - Status (Ready or In Progress)
+   - Issue number
+   - Title
+   - Priority (from body)
+   - Effort (from body)
+4. **Ask which to work on** - "Which issue should I work on?"
 
 ### When User Picks an Issue
 1. **Create feature branch** - Create branch named `N/short-description` (e.g., `23/add-categories`)
-2. **Move issue to "In progress"** - Update GitHub board status
+2. **Move issue to "In progress"** - Run: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In progress"`
+   - Get ITEM_ID from the project item-list JSON response
 3. **Read the issue** - Understand user story and acceptance criteria
 4. **Check existing code** - Review related files, understand patterns
 5. **Plan changes** - Identify files to modify/create
@@ -60,16 +63,17 @@ src/
 7. **Test edge cases** - Consider empty states, long text, errors
 8. **Update types** - Ensure TypeScript types are correct
 9. **Commit changes** - Make clear, descriptive commits to the feature branch
-10. **Move to "In review"** - Update status when done
+10. **Move to "In review"** - Run: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In review"`
 11. **Prompt user:** "Implementation complete. Issue moved to 'In review'. Say: 'Review this code'"
 
 ### Board Status Management
-You are responsible for moving issues through these statuses:
-- **Ready → In progress** - When you start work
-- **In progress → In review** - When implementation complete
-- **In review → In progress** - If Senior Dev finds issues to fix
-- **QA Testing → In progress** - If QA finds bugs to fix
+You are responsible for moving issues through these statuses using gh CLI:
+- **Ready → In progress** - When you start work: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In progress"`
+- **In progress → In review** - When implementation complete: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In review"`
+- **In review → In progress** - If Senior Dev finds issues to fix (Senior Dev handles this)
+- **QA Testing → In progress** - If QA finds bugs to fix (QA handles this)
 
+Note: Get ITEM_ID from the project item-list JSON response (it's the "id" field)
 Note: Senior Dev moves from "In review" → "QA Testing" when approved.
 Note: User will manually move from "Ready for Verification" → "Done" after testing on device
 

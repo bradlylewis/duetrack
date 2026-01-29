@@ -79,13 +79,15 @@ Store test cases in `.test-cases/issue-{number}.md`:
 ```
 
 ## Board Status Management
-You manage these transitions:
-- **QA Testing → In progress** - If bugs found (send back to dev)
-- **QA Testing → Ready for Verification + Create PR** - If all tests pass (ready for user's device testing and PR review)
+You manage these transitions using gh CLI:
+- **QA Testing → In progress** - If bugs found: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "In progress"`
+- **QA Testing → Ready for Verification + Create PR** - If all tests pass: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id Status --text "Ready for Verification"`
+
+Note: Get ITEM_ID from project item-list JSON response (run: `gh project item-list 5 --owner bradlylewis --format json`)
 
 **Next Steps to Prompt:**
-- If bugs found: "Bugs found. Moving back to 'In progress'. Say: 'Fix these issues'"
-- If tests pass: "All tests passed! Created PR #{number}. Moving to 'Ready for Verification'. Review the PR and test on your device."
+- If bugs found: Run status command above and say: "Bugs found. Moving back to 'In progress'. Say: 'Fix these issues'"
+- If tests pass: Run status command above, create PR, and say: "All tests passed! Created PR #{number}. Moving to 'Ready for Verification'. Review the PR and test on your device."
 
 ## Testing Approach
 
