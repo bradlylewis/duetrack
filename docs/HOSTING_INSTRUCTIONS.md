@@ -3,7 +3,7 @@
 ## Setup Instructions
 
 1. **Enable GitHub Pages for this repository:**
-   - Go to: https://github.com/bradlylewis/bill-app/settings/pages
+   - Go to: https://github.com/bradlylewis/duetrack/settings/pages
    - Under "Source", select: **Deploy from a branch**
    - Under "Branch", select: **main** (or **master**) and **/docs**
    - Click **Save**
@@ -14,7 +14,7 @@
 
 3. **Your Privacy Policy will be accessible at:**
    ```
-   https://bradlylewis.github.io/bill-app/privacy-policy.html
+   https://bradlylewis.github.io/duetrack/privacy-policy.html
    ```
 
 4. **Update app.json:**
@@ -23,7 +23,7 @@
 
 5. **Add to Google Play Console:**
    - Go to: Google Play Console > Your App > Store presence > Privacy Policy
-   - Enter the URL: `https://bradlylewis.github.io/bill-app/privacy-policy.html`
+   - Enter the URL: `https://bradlylewis.github.io/duetrack/privacy-policy.html`
    - Save changes
 
 ## Alternative Hosting Options

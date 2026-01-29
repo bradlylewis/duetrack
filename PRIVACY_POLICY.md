@@ -89,7 +89,7 @@ DueTrack does not integrate with any third-party services, analytics tools, or a
 
 If you have questions or concerns about this Privacy Policy, please contact us at:
 - Email: [Your Contact Email]
-- GitHub Issues: https://github.com/bradlylewis/bill-app/issues
+- GitHub Issues: https://github.com/bradlylewis/duetrack/issues
 
 ## Compliance
 
