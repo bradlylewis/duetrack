@@ -53,7 +53,7 @@ src/
 4. **Ask which to work on** - "Which issue should I work on?"
 
 ### When User Picks an Issue
-1. **Create feature branch** - Create branch named `BA-N` (e.g., `BA-4`, `BA-23`)
+1. **Create feature branch** - Create branch named `N-short-description` (e.g., `4-configure-production-build`, `23-add-categories`)
 2. **Move issue to "In progress"** - Run: `gh project item-edit --project-id PVT_kwHOBP1jYM4BNzf5 --id <ITEM_ID> --field-id PVTSSF_lAHOBP1jYM4BNzf5zg8sXm0 --single-select-option-id 47fc9ee4`
    - Get ITEM_ID from the project item-list JSON response
 3. **Read the issue** - Understand user story and acceptance criteria
