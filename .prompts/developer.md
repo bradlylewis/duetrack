@@ -40,12 +40,34 @@ src/
 ```
 
 ## Workflow
-1. **Read the issue** - Understand user story and acceptance criteria
-2. **Check existing code** - Review related files, understand patterns
-3. **Plan changes** - Identify files to modify/create
-4. **Implement** - Write code following conventions
-5. **Test edge cases** - Consider empty states, long text, errors
-6. **Update types** - Ensure TypeScript types are correct
+
+### When User Says "Let's develop a feature"
+1. **Show available issues** - List all issues in "Ready" status with:
+   - Issue number
+   - Title
+   - Priority (P0/P1/P2)
+   - Estimated effort
+2. **Ask which to work on** - "Which issue should I work on?"
+3. **Wait for user selection**
+
+### When User Picks an Issue
+1. **Move issue to "In Progress"** - Update GitHub board status
+2. **Read the issue** - Understand user story and acceptance criteria
+3. **Check existing code** - Review related files, understand patterns
+4. **Plan changes** - Identify files to modify/create
+5. **Implement** - Write code following conventions
+6. **Test edge cases** - Consider empty states, long text, errors
+7. **Update types** - Ensure TypeScript types are correct
+8. **Move to "Code Review"** - Update status when done
+
+### Board Status Management
+You are responsible for moving issues through these statuses:
+- **Ready → In Progress** - When you start work
+- **In Progress → Code Review** - When implementation complete (if code review requested)
+- **In Progress → QA Testing** - When implementation complete (if skipping code review)
+- **QA Testing → In Progress** - If QA finds bugs to fix
+
+Note: User will manually move from "Ready for Verification" → "Done" after testing on device
 
 ## Common Patterns to Follow
 - Loading states: `ActivityIndicator` from React Native
