@@ -27,7 +27,8 @@
 4. [004-bills-crud.md](backlog/tickets/004-bills-crud.md) – ✅ IMPLEMENTED
 5. [005-dashboard-upcoming.md](backlog/tickets/005-dashboard-upcoming.md) – ✅ IMPLEMENTED
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – ✅ IMPLEMENTED
-7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
+7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – ✅ IMPLEMENTED
+8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – Ready
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – Ready
 7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
 8. [008-notifications-scheduling.md](backlog/tickets/008-notifications-scheduling.md) – Ready

@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
+import { getAppMeta, setAppMeta } from '../db/database';
 
 export async function initializeNotifications(): Promise<void> {
   try {
@@ -13,6 +14,9 @@ export async function initializeNotifications(): Promise<void> {
 
     console.log(`Notification permission: ${isGranted ? 'granted' : 'denied'}`);
 
+    // Store permission status
+    await setAppMeta('notification_permission_status', isGranted ? 'granted' : 'denied');
+
     // Set notification handler
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -23,6 +27,36 @@ export async function initializeNotifications(): Promise<void> {
     });
   } catch (error) {
     console.error('Error initializing notifications:', error);
+  }
+}
+
+export async function getNotificationPermissionStatus(): Promise<'granted' | 'denied' | 'unknown'> {
+  try {
+    const status = await getAppMeta('notification_permission_status');
+    return (status as 'granted' | 'denied' | 'unknown') || 'unknown';
+  } catch (error) {
+    console.error('Error getting notification permission status:', error);
+    return 'unknown';
+  }
+}
+
+export async function checkAndUpdatePermissionStatus(): Promise<'granted' | 'denied'> {
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    const isGranted = status === 'granted';
+    await setAppMeta('notification_permission_status', isGranted ? 'granted' : 'denied');
+    return isGranted ? 'granted' : 'denied';
+  } catch (error) {
+    console.error('Error checking permission status:', error);
+    return 'denied';
+  }
+}
+
+export async function openNotificationSettings(): Promise<void> {
+  try {
+    await Linking.openSettings();
+  } catch (error) {
+    console.error('Error opening settings:', error);
   }
 }
 

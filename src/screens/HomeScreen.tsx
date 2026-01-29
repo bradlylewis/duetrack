@@ -10,7 +10,9 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Layout } from '../components/Layout';
 import { BillCard } from '../components/BillCard';
+import { NotificationPermissionBanner } from '../components/NotificationPermissionBanner';
 import { getAllBills } from '../db/queries';
+import { checkAndUpdatePermissionStatus } from '../services/notifications';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
@@ -23,6 +25,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'unknown'>('unknown');
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const loadBills = async (isRefreshing = false) => {
     try {
@@ -46,8 +50,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       loadBills();
+      checkPermissionStatus();
     }, [])
   );
+
+  const checkPermissionStatus = async () => {
+    const status = await checkAndUpdatePermissionStatus();
+    setPermissionStatus(status);
+    // Reset banner dismissed state when checking permission
+    setBannerDismissed(false);
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -141,6 +153,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {permissionStatus === 'denied' && !bannerDismissed && (
+          <NotificationPermissionBanner 
+            onDismiss={() => setBannerDismissed(true)}
+          />
+        )}
+        
         {renderBillGroup('Overdue', overdue, colors.error)}
         {renderBillGroup('This Week', thisWeek, colors.warning)}
         {renderBillGroup('Later', later, colors.textSecondary)}
