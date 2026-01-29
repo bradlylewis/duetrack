@@ -1,20 +1,149 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Layout } from '../components/Layout';
+import { BillCard } from '../components/BillCard';
+import { getAllBills } from '../db/queries';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
+import type { Bill } from '../types';
+import type { HomeStackScreenProps } from '../navigation/types';
 
-export const HomeScreen: React.FC = () => {
+type Props = HomeStackScreenProps<'HomeMain'>;
+
+export const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadBills = async (isRefreshing = false) => {
+    try {
+      if (!isRefreshing) setLoading(true);
+      const fetchedBills = await getAllBills();
+      
+      // Filter active bills and sort by due date
+      const activeBills = fetchedBills
+        .filter((bill) => bill.status === 'active')
+        .sort((a, b) => a.dueDate - b.dueDate);
+      
+      setBills(activeBills);
+    } catch (error) {
+      console.error('Error loading bills:', error);
+    } finally {
+      setLoading(false);
+      if (isRefreshing) setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadBills();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadBills(true);
+  };
+
+  const groupBillsByUrgency = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const oneWeekFromNow = new Date(today);
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
+    const overdue: Bill[] = [];
+    const thisWeek: Bill[] = [];
+    const later: Bill[] = [];
+
+    bills.forEach((bill) => {
+      const dueDate = new Date(bill.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+
+      if (dueDate < today) {
+        overdue.push(bill);
+      } else if (dueDate <= oneWeekFromNow) {
+        thisWeek.push(bill);
+      } else {
+        later.push(bill);
+      }
+    });
+
+    return { overdue, thisWeek, later };
+  };
+
+  const renderBillGroup = (title: string, groupBills: Bill[], color: string) => {
+    if (groupBills.length === 0) return null;
+
+    return (
+      <View style={styles.group}>
+        <Text style={[styles.groupTitle, { color }]}>
+          {title} ({groupBills.length})
+        </Text>
+        {groupBills.map((bill) => (
+          <BillCard
+            key={bill.id}
+            bill={bill}
+            onPress={() =>
+              navigation.navigate('BillDetails', { billId: bill.id })
+            }
+          />
+        ))}
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </Layout>
+    );
+  }
+
+  if (bills.length === 0) {
+    return (
+      <Layout>
+        <ScrollView
+          contentContainerStyle={styles.emptyContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <Text style={styles.emptyIcon}>📋</Text>
+          <Text style={styles.emptyTitle}>No Bills Yet</Text>
+          <Text style={styles.emptyText}>
+            Add your first bill to get started tracking your payments and never miss a due date!
+          </Text>
+        </ScrollView>
+      </Layout>
+    );
+  }
+
+  const { overdue, thisWeek, later } = groupBillsByUrgency();
+
   return (
     <Layout noPadding>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Upcoming Bills</Text>
-          <Text style={styles.placeholder}>
-            Your bills will appear here. Add your first bill to get started!
-          </Text>
-        </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {renderBillGroup('Overdue', overdue, colors.error)}
+        {renderBillGroup('This Week', thisWeek, colors.warning)}
+        {renderBillGroup('Later', later, colors.textSecondary)}
       </ScrollView>
     </Layout>
   );
@@ -24,20 +153,42 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  container: {
+  scrollContent: {
     padding: spacing.screenPadding,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 300,
   },
-  title: {
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.screenPadding,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: spacing.lg,
+  },
+  emptyTitle: {
     ...typography.styles.h2,
     color: colors.text,
     marginBottom: spacing.md,
+    textAlign: 'center',
   },
-  placeholder: {
+  emptyText: {
     ...typography.styles.body,
     color: colors.textSecondary,
     textAlign: 'center',
+    maxWidth: 300,
+  },
+  group: {
+    marginBottom: spacing.xl,
+  },
+  groupTitle: {
+    ...typography.styles.h3,
+    marginBottom: spacing.md,
+    fontWeight: '700',
   },
 });

@@ -1,10 +1,10 @@
 import { getAllAsync, getAsync, runAsync } from '@/src/db/database';
 import { Bill, Payment } from '@/src/types';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 // Bills queries
 export async function insertBill(bill: Omit<Bill, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-  const id = uuidv4();
+  const id = Crypto.randomUUID();
   const now = Date.now();
 
   await runAsync(
@@ -109,7 +109,7 @@ export async function getBillsByStatus(status: 'active' | 'completed'): Promise<
 export async function insertPayment(
   payment: Omit<Payment, 'id' | 'createdAt'>
 ): Promise<string> {
-  const id = uuidv4();
+  const id = Crypto.randomUUID();
   const now = Date.now();
 
   await runAsync(

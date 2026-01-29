@@ -1,28 +1,210 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { Layout } from '../components/Layout';
+import { BillForm, BillFormValues } from '../components/BillForm';
+import { getBillById, updateBill, deleteBill } from '../db/queries';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../navigation/types';
+import type { Bill } from '../types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'BillDetails'>;
 
-export const BillDetailsScreen: React.FC<Props> = ({ route }) => {
+export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { billId } = route.params;
+  const [bill, setBill] = useState<Bill | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    loadBill();
+  }, [billId]);
+
+  const loadBill = async () => {
+    try {
+      setLoading(true);
+      const fetchedBill = await getBillById(billId);
+      setBill(fetchedBill);
+    } catch (error) {
+      console.error('Error loading bill:', error);
+      Alert.alert('Error', 'Failed to load bill details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (values: BillFormValues) => {
+    if (!bill) return;
+
+    try {
+      await updateBill(billId, {
+        name: values.name,
+        dueDate: values.dueDate,
+        amount: values.amount,
+        frequency: values.frequency,
+        autopay: values.autopay,
+        notes: values.notes,
+        iconKey: values.iconKey,
+      });
+
+      Alert.alert('Success', 'Bill updated successfully!');
+      setIsEditing(false);
+      await loadBill();
+    } catch (error) {
+      console.error('Error updating bill:', error);
+      Alert.alert('Error', 'Failed to update bill. Please try again.');
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Bill',
+      'Are you sure you want to delete this bill? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteBill(billId);
+              Alert.alert('Success', 'Bill deleted successfully', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.goBack(),
+                },
+              ]);
+            } catch (error) {
+              console.error('Error deleting bill:', error);
+              Alert.alert('Error', 'Failed to delete bill');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const formatDate = (timestamp: number): string => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </Layout>
+    );
+  }
+
+  if (!bill) {
+    return (
+      <Layout>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Bill not found</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.buttonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </Layout>
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <Layout noPadding useSafeArea={false}>
+        <BillForm
+          initialValues={bill}
+          onSubmit={handleUpdate}
+          onCancel={() => setIsEditing(false)}
+          submitLabel="Update Bill"
+        />
+      </Layout>
+    );
+  }
 
   return (
     <Layout noPadding>
       <ScrollView style={styles.scrollView}>
         <View style={styles.container}>
-          <Text style={styles.title}>Bill Details</Text>
-          <Text style={styles.placeholder}>
-            Details for bill ID: {billId}
-          </Text>
-          <Text style={styles.info}>
-            This screen will show full bill details, edit options, and payment history.
-          </Text>
+          <View style={styles.header}>
+            <Text style={styles.icon}>{bill.iconKey}</Text>
+            <Text style={styles.name}>{bill.name}</Text>
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Amount:</Text>
+              <Text style={styles.value}>
+                {bill.amount ? `$${bill.amount.toFixed(2)}` : 'Not set'}
+              </Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Due Date:</Text>
+              <Text style={styles.value}>{formatDate(bill.dueDate)}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Frequency:</Text>
+              <Text style={styles.value}>
+                {bill.frequency === 'one-time' ? 'One-time' : 'Monthly'}
+              </Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Autopay:</Text>
+              <Text style={styles.value}>{bill.autopay ? 'Yes' : 'No'}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Status:</Text>
+              <Text style={[styles.value, styles.statusText]}>
+                {bill.status === 'active' ? 'Active' : 'Completed'}
+              </Text>
+            </View>
+
+            {bill.notes && (
+              <View style={styles.notesSection}>
+                <Text style={styles.label}>Notes:</Text>
+                <Text style={styles.notes}>{bill.notes}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={[styles.button, styles.editButton]}
+              onPress={() => setIsEditing(true)}
+            >
+              <Text style={styles.buttonText}>Edit Bill</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.deleteButton]}
+              onPress={handleDelete}
+            >
+              <Text style={styles.deleteButtonText}>Delete Bill</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </Layout>
@@ -36,18 +218,92 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.screenPadding,
   },
-  title: {
-    ...typography.styles.h2,
-    color: colors.text,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.screenPadding,
+  },
+  errorText: {
+    ...typography.styles.h3,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+    paddingVertical: spacing.lg,
+  },
+  icon: {
+    fontSize: 64,
     marginBottom: spacing.md,
   },
-  placeholder: {
-    ...typography.styles.bodyBold,
-    color: colors.textSecondary,
-    marginBottom: spacing.base,
+  name: {
+    ...typography.styles.h2,
+    color: colors.text,
+    textAlign: 'center',
   },
-  info: {
+  section: {
+    backgroundColor: colors.white,
+    borderRadius: spacing.borderRadius.md,
+    padding: spacing.base,
+    marginBottom: spacing.lg,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  label: {
     ...typography.styles.body,
     color: colors.textSecondary,
+  },
+  value: {
+    ...typography.styles.bodyBold,
+    color: colors.text,
+  },
+  statusText: {
+    color: colors.success,
+  },
+  notesSection: {
+    paddingTop: spacing.md,
+  },
+  notes: {
+    ...typography.styles.body,
+    color: colors.text,
+    marginTop: spacing.sm,
+  },
+  actions: {
+    gap: spacing.md,
+  },
+  button: {
+    height: spacing.buttonHeight.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: spacing.borderRadius.base,
+  },
+  editButton: {
+    backgroundColor: colors.primary,
+  },
+  deleteButton: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  buttonText: {
+    ...typography.styles.bodyBold,
+    color: colors.white,
+  },
+  deleteButtonText: {
+    ...typography.styles.bodyBold,
+    color: colors.error,
   },
 });

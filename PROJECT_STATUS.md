@@ -1,7 +1,7 @@
 # Bill Tracker MVP – Project Status
 
-**Project Status:** ✅ SPEC & SCAFFOLDING COMPLETE | Ready for Implementation  
-**Last Updated:** Jan 28, 2026  
+**Project Status:** ✅ CORE FEATURES IN PROGRESS | Bills CRUD Complete  
+**Last Updated:** Jan 29, 2026  
 **Team:** Orchestrator, Architect, Dev, QA (Multi-Agent Vibe Coding)
 
 ---
@@ -24,7 +24,7 @@
 1. [001-app-scaffold.md](backlog/tickets/001-app-scaffold.md) – ✅ IMPLEMENTED
 2. [002-navigation-shell.md](backlog/tickets/002-navigation-shell.md) – ✅ IMPLEMENTED
 3. [003-db-schema.md](backlog/tickets/003-db-schema.md) – ✅ IMPLEMENTED (completed in Ticket 001)
-4. [004-bills-crud.md](backlog/tickets/004-bills-crud.md) – Ready
+4. [004-bills-crud.md](backlog/tickets/004-bills-crud.md) – ✅ IMPLEMENTED
 5. [005-dashboard-upcoming.md](backlog/tickets/005-dashboard-upcoming.md) – Ready
 6. [006-mark-paid-history.md](backlog/tickets/006-mark-paid-history.md) – Ready
 7. [007-notifications-permissions.md](backlog/tickets/007-notifications-permissions.md) – Ready
@@ -116,17 +116,46 @@ src/
     └── spacing.ts
 ```
 
+### ✅ 8. Ticket 004 Implementation
+**Status:** ✅ COMPLETE
+
+**Implemented:**
+- BillForm component with all fields (name, amount, due date, frequency, autopay, notes, icon)
+- Form validation and error handling
+- AddBillScreen with database integration
+- BillDetailsScreen with view/edit modes
+- Delete functionality with confirmation dialog
+- BillCard component with urgency indicators (red/orange/gray)
+- HomeScreen displays bills grouped by urgency (Overdue, This Week, Later)
+- Pull-to-refresh functionality
+- Empty state handling
+- Fixed crypto.getRandomValues() error by replacing uuid with expo-crypto
+
+**Code Structure:**
+```
+src/
+├── components/
+│   ├── BillForm.tsx (reusable form for add/edit)
+│   └── BillCard.tsx (bill display with urgency colors)
+├── screens/
+│   ├── HomeScreen.tsx (updated with bill list & grouping)
+│   ├── AddBillScreen.tsx (full form integration)
+│   └── BillDetailsScreen.tsx (view/edit/delete)
+└── db/
+    └── queries.ts (updated to use expo-crypto for UUIDs)
+```
+
 ---
 
 ## 📊 Project Overview
 
 ### MVP Scope (IN)
 - ✅ Bills CRUD (add, edit, delete with metadata)
-- ✅ Dashboard with urgency grouping (Overdue / This Week / Later)
-- ✅ Mark paid (with monthly rollover rule)
-- ✅ Local notifications (3 days before + day-of at 9 AM)
-- ✅ Icon picker (30 built-in icons)
-- ✅ Payment history tracking
+- 🔄 Dashboard with urgency grouping (Overdue / This Week / Later) - Partially complete
+- ⏳ Mark paid (with monthly rollover rule)
+- ⏳ Local notifications (3 days before + day-of at 9 AM)
+- ⏳ Icon picker (30 built-in icons)
+- ⏳ Payment history tracking
 
 ### Out of Scope (NOT in MVP)
 - Bank integrations
@@ -149,36 +178,31 @@ src/
 
 ## 🚀 Next Steps
 
-### Immediate (Ticket 004)
-**Ticket 004:** Bills CRUD Operations
-- Implement Add Bill form with all fields
-- Implement Edit Bill functionality
-- Wire up BillDetailsScreen with real data
-- Connect HomeScreen to display bills from database
-- Add delete functionality with confirmation
+### Immediate (Ticket 005)
+**Ticket 005:** Dashboard – Upcoming Bills View
+- Refine bill grouping logic (already implemented in HomeScreen)
+- Add sorting within groups
+- Verify urgency calculations are accurate
+- Polish UI and spacing
 
 ### Implementation Phase (Tickets 005–008)
-3. **Ticket 004:** Bills CRUD Operations
-   - Add Bill form (name, due date, amount, frequency, autopay, notes, icon)
-   - Edit Bill form
-   - Delete Bill with confirmation
 
-4. **Ticket 005:** Dashboard – Upcoming Bills View
+5. **Ticket 005:** Dashboard – Upcoming Bills View
    - Implement bill grouping (Overdue / This Week / Later)
    - Add sorting and filtering
    - Display bill cards with icon, name, date, amount
 
-5. **Ticket 006:** Mark Paid & Payment History
+6. **Ticket 006:** Mark Paid & Payment History
    - Implement Mark Paid action
    - Calculate monthly rollover (Jan 31 → Feb 28/29)
    - Show payment history on bill details
 
-6. **Ticket 007:** Notification Permissions
+7. **Ticket 007:** Notification Permissions
    - Request permission on app launch
    - Show banner if denied
    - Link to Settings
 
-7. **Ticket 008:** Notification Scheduling
+8. **Ticket 008:** Notification Scheduling
    - Schedule 2 reminders per bill (3 days + day-of at 9 AM)
    - Reschedule on bill edit
    - DST handling and timezone detection
@@ -305,8 +329,8 @@ npm run android      # Run on Android emulator
 
 ## 📅 Timeline (Estimated)
 
-- **Week 1 (Jan 28 – Feb 3):** Spec + Ticket 001 ✅ DONE
-- **Week 2 (Feb 4 – Feb 10):** Tickets 002–004 (Navigation, DB, CRUD)
+- **Week 1 (Jan 28 – Feb 3):** Tickets 001–002 ✅ DONE
+- **Week 2 (Feb 4 – Feb 10):** Tickets 003–004 ✅ DONE (Ahead of schedule!)
 - **Week 3 (Feb 11 – Feb 17):** Tickets 005–007 (Dashboard, Mark Paid, Notifications)
 - **Week 4 (Feb 18 – Feb 24):** Tickets 008–010 (Scheduling, Icons, Polish)
 - **Week 5 (Feb 25 – Mar 2):** Final QA, Bug Fixes, Release Prep

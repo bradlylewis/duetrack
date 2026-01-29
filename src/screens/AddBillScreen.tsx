@@ -1,51 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Alert } from 'react-native';
 import { Layout } from '../components/Layout';
-import { colors } from '../styles/colors';
-import { typography } from '../styles/typography';
-import { spacing } from '../styles/spacing';
+import { BillForm, BillFormValues } from '../components/BillForm';
+import { insertBill } from '../db/queries';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootTabParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootTabParamList, 'AddBill'>;
 
-export const AddBillScreen: React.FC<Props> = () => {
+export const AddBillScreen: React.FC<Props> = ({ navigation }) => {
+  const handleSubmit = async (values: BillFormValues) => {
+    try {
+      await insertBill({
+        name: values.name,
+        dueDate: values.dueDate,
+        amount: values.amount,
+        frequency: values.frequency,
+        autopay: values.autopay,
+        notes: values.notes,
+        iconKey: values.iconKey,
+        status: 'active',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+
+      Alert.alert('Success', 'Bill added successfully!', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Home', { screen: 'HomeMain' }),
+        },
+      ]);
+    } catch (error) {
+      console.error('Error adding bill:', error);
+      Alert.alert('Error', 'Failed to add bill. Please try again.');
+    }
+  };
+
+  const handleCancel = () => {
+    navigation.goBack();
+  };
+
   return (
-    <Layout noPadding>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Add New Bill</Text>
-          <Text style={styles.placeholder}>
-            Form to add a new bill will be implemented here.
-          </Text>
-          <Text style={styles.info}>
-            Fields: name, amount, due date, recurrence, icon, notes.
-          </Text>
-        </View>
-      </ScrollView>
+    <Layout noPadding useSafeArea={false}>
+      <BillForm
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        submitLabel="Add Bill"
+      />
     </Layout>
   );
 };
-
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    padding: spacing.screenPadding,
-  },
-  title: {
-    ...typography.styles.h2,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  placeholder: {
-    ...typography.styles.bodyBold,
-    color: colors.textSecondary,
-    marginBottom: spacing.base,
-  },
-  info: {
-    ...typography.styles.body,
-    color: colors.textSecondary,
-  },
-});
