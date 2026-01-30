@@ -1,23 +1,32 @@
 # Internal Testing Guide
 
 ## Build Status
-🔄 **Production AAB build in progress**
-- Build ID: `0e480eb9-209b-46de-aff9-0218cdf76efe`
+✅ **Production AAB build completed successfully**
+- Build ID: `900d5bd1-3d48-4d2d-b193-cc627db61134`
 - Platform: Android
 - Build Type: app-bundle (AAB)
-- Version Code: 3
-- Track: https://expo.dev/accounts/bradlylewis/projects/bill-tracker/builds/0e480eb9-209b-46de-aff9-0218cdf76efe
+- Version: 1.0.0
+- Version Code: 5
+- File Size: 70 MB
+- Downloaded: `DueTrack-v1.0.0.aab`
+- Track: https://expo.dev/accounts/bradlylewis/projects/bill-tracker/builds/900d5bd1-3d48-4d2d-b193-cc627db61134
+
+**Fixes Applied:**
+- ✅ Removed invalid `privacyPolicy` field from app.json
+- ✅ Removed deprecated `ios.supportsTabletMode` field
+- ✅ Created placeholder app assets (icon, splash, adaptive-icon, etc.)
+- ✅ Installed missing peer dependency `react-native-worklets`
+- ✅ Removed `versionCode` from app.json (now managed by EAS)
+- ✅ Committed assets to git repository
 
 ## Step 1: Download AAB from EAS
 
-Once the build completes:
+✅ **Already downloaded:** `DueTrack-v1.0.0.aab` (70 MB)
 
+To download again if needed:
 ```bash
-# Download the AAB file
-eas build:download --id 0e480eb9-209b-46de-aff9-0218cdf76efe --output ./build/
+curl -L -o DueTrack-v1.0.0.aab "https://expo.dev/artifacts/eas/iMHqUApkrVfapF4HiPscb5.aab"
 ```
-
-Or download directly from the EAS dashboard link above.
 
 ## Step 2: Upload to Google Play Console
 
