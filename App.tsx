@@ -2,9 +2,9 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { RootNavigator } from '@/src/navigation/RootNavigator';
-import { initializeNotifications } from '@/src/services/notifications';
-import { initDatabase } from '@/src/db/database';
+import { RootNavigator } from './src/navigation/RootNavigator';
+import { initializeNotifications } from './src/services/notifications';
+import { initDatabase } from './src/db/database';
 
 export default function App() {
   React.useEffect(() => {
@@ -37,7 +37,7 @@ export default function App() {
     <SafeAreaProvider>
       <View style={styles.container}>
         <RootNavigator />
-        <StatusBar barStyle="dark-content" />
+        <StatusBar style="dark" />
       </View>
     </SafeAreaProvider>
   );
