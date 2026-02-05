@@ -9,6 +9,10 @@ import { initDatabase } from '@/src/db/database';
 export default function App() {
   React.useEffect(() => {
     const setup = async () => {
+      // Initialize Firebase
+      // Firebase is automatically initialized when @react-native-firebase/app is imported
+      console.log('Firebase initialized');
+
       // Initialize database
       try {
         await initDatabase();
