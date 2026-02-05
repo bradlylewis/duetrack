@@ -15,7 +15,6 @@
       "**/*"
     ],
     "ios": {
-      "supportsTabletMode": false,
       "requireFullScreen": true,
       "bundleIdentifier": "com.duetrack.app"
     },
@@ -25,7 +24,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.duetrack.app",
-      "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "SCHEDULE_EXACT_ALARM"
