@@ -2,6 +2,7 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import '@react-native-firebase/app';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { initializeNotifications } from './src/services/notifications';
 import { initDatabase } from './src/db/database';
