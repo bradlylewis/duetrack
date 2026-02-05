@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "DueTrack",
-    "slug": "duetrack",
+    "slug": "bill-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,6 @@
       "**/*"
     ],
     "ios": {
-      "supportsTabletMode": false,
       "requireFullScreen": true,
       "bundleIdentifier": "com.duetrack.app"
     },
@@ -25,7 +24,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.duetrack.app",
-      "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "SCHEDULE_EXACT_ALARM"
@@ -48,6 +46,6 @@
         "projectId": "b63e5bb7-d51c-486f-b25b-298957496b3e"
       }
     },
-    "privacyPolicy": "https://bradlylewis.github.io/duetrack/privacy-policy.html"
+    "owner": "bradlylewis"
   }
 }
