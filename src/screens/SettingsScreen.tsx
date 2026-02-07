@@ -1,19 +1,69 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Layout } from '../components/Layout';
+import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
 
 export const SettingsScreen: React.FC = () => {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+            } catch (error: any) {
+              Alert.alert('Error', error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <Layout noPadding>
       <ScrollView style={styles.scrollView}>
         <View style={styles.container}>
           <Text style={styles.title}>Settings</Text>
-          <Text style={styles.placeholder}>
-            App settings and preferences will be available here.
-          </Text>
+          
+          {user && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Account</Text>
+              <View style={styles.card}>
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.value}>{user.email}</Text>
+              </View>
+              
+              <TouchableOpacity
+                style={styles.signOutButton}
+                onPress={handleSignOut}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>About</Text>
+            <View style={styles.card}>
+              <Text style={styles.label}>Version</Text>
+              <Text style={styles.value}>1.0.0</Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </Layout>
@@ -26,18 +76,49 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing.screenPadding,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 300,
   },
   title: {
     ...typography.styles.h2,
     color: colors.text,
+    marginBottom: spacing.xl,
+  },
+  section: {
+    marginBottom: spacing['2xl'],
+  },
+  sectionTitle: {
+    ...typography.styles.bodyBold,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+    textTransform: 'uppercase',
+    fontSize: typography.fontSize.sm,
+  },
+  card: {
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: spacing.borderRadius.base,
+    padding: spacing.base,
+    borderWidth: 1,
+    borderColor: colors.border,
     marginBottom: spacing.md,
   },
-  placeholder: {
-    ...typography.styles.body,
+  label: {
+    ...typography.styles.caption,
     color: colors.textSecondary,
-    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  value: {
+    ...typography.styles.body,
+    color: colors.text,
+  },
+  signOutButton: {
+    height: spacing.buttonHeight.base,
+    backgroundColor: colors.error,
+    borderRadius: spacing.borderRadius.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.base,
+  },
+  signOutButtonText: {
+    ...typography.styles.bodyBold,
+    color: colors.white,
   },
 });
