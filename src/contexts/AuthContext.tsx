@@ -38,6 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await auth().createUserWithEmailAndPassword(email, password);
     } catch (error: any) {
+      console.error('Sign up error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       throw new Error(getAuthErrorMessage(error.code));
     }
   };
