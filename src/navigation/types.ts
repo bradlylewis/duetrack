@@ -2,6 +2,13 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 
+// Auth Stack params
+export type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+  ForgotPassword: undefined;
+};
+
 // Root Tab Navigator params
 export type RootTabParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;
