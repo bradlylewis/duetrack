@@ -169,8 +169,29 @@ When editing a bill:
 
 - **Unix timestamps:** All dates are stored as Unix timestamps (milliseconds or seconds, standardize) for easy comparisons and timezone handling.
 - **No soft deletes (initially):** One-time bills are marked with `status="completed"`, effectively hidden from the upcoming view. Hard deletion is supported.
-- **No user accounts:** No `users` table; all data is device-local.
-- **No cloud sync:** No sync_status, no last_synced_at fields.
+- **Local-first architecture:** SQLite is the primary data store; Firestore used for cloud backup and sync (see [ADR-003](../docs/adr/003-firestore-schema.md)).
+- **Cloud sync:** Firestore schema mirrors SQLite with additional sync metadata fields (`lastSynced`, `deviceId`, `_version`).
+
+---
+
+## Cloud Sync (Firestore)
+
+For users with Firebase accounts, data syncs to Firestore for cross-device access and backup.
+
+**Firestore Schema:** See [ADR-003: Firestore Schema Design](../docs/adr/003-firestore-schema.md)
+
+**Collection Structure:**
+```
+users/{uid}/
+  ├── bills/{billId}
+  └── payments/{paymentId}
+```
+
+**Key Differences from SQLite:**
+- `notificationIds`: Stored as native array (not JSON string)
+- Added sync metadata: `lastSynced`, `deviceId`, `_version`
+- Timestamps use Firestore `Timestamp` type
+- Security rules enforce user isolation
 
 ---
 
