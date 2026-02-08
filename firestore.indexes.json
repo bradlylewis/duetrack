@@ -15,16 +15,6 @@
       ]
     },
     {
-      "collectionGroup": "bills",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "lastSynced",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "payments",
       "queryScope": "COLLECTION",
       "fields": [
@@ -35,16 +25,6 @@
         {
           "fieldPath": "paidDate",
           "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "payments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "lastSynced",
-          "order": "ASCENDING"
         }
       ]
     }
