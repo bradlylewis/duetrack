@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
+import { useSync } from '../contexts/SyncContext';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
 
 export const SettingsScreen: React.FC = () => {
   const { user, signOut, deleteAccount } = useAuth();
+  const { syncNow, migrateData, isSyncing, syncState } = useSync();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const handleSignOut = () => {
     Alert.alert(
@@ -61,6 +64,42 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const handleSyncNow = async () => {
+    try {
+      await syncNow();
+      Alert.alert('Success', 'Data synced successfully!');
+    } catch (error: any) {
+      Alert.alert('Sync Error', error.message);
+    }
+  };
+
+  const handleMigrateData = () => {
+    Alert.alert(
+      'Migrate Local Data',
+      'This will upload all your local bills and payments to the cloud. Your data will be synced across all your devices. Continue?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Migrate',
+          onPress: async () => {
+            setIsMigrating(true);
+            try {
+              await migrateData();
+              Alert.alert('Success', 'Data migrated successfully! Your bills are now synced to the cloud.');
+            } catch (error: any) {
+              Alert.alert('Migration Error', error.message);
+            } finally {
+              setIsMigrating(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <Layout noPadding>
       <ScrollView style={styles.scrollView}>
@@ -93,6 +132,56 @@ export const SettingsScreen: React.FC = () => {
                   <ActivityIndicator color={colors.white} />
                 ) : (
                   <Text style={styles.deleteButtonText}>Delete Account</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {user && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Data Sync</Text>
+              <View style={styles.card}>
+                <Text style={styles.label}>Sync Status</Text>
+                <Text style={styles.value}>
+                  {syncState.status === 'synced' && 'Synced'}
+                  {syncState.status === 'syncing' && 'Syncing...'}
+                  {syncState.status === 'offline' && 'Offline'}
+                  {syncState.status === 'error' && 'Error'}
+                  {syncState.status === 'idle' && 'Not synced'}
+                </Text>
+                {syncState.lastSyncTime && (
+                  <>
+                    <Text style={styles.label}>Last Synced</Text>
+                    <Text style={styles.value}>
+                      {new Date(syncState.lastSyncTime).toLocaleString()}
+                    </Text>
+                  </>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+                onPress={handleSyncNow}
+                activeOpacity={0.8}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={styles.syncButtonText}>Sync Now</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.migrateButton, isMigrating && styles.migrateButtonDisabled]}
+                onPress={handleMigrateData}
+                activeOpacity={0.8}
+                disabled={isMigrating}
+              >
+                {isMigrating ? (
+                  <ActivityIndicator color={colors.primary} />
+                ) : (
+                  <Text style={styles.migrateButtonText}>Migrate Local Data to Cloud</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -178,5 +267,37 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     ...typography.styles.bodyBold,
     color: colors.white,
+  },
+  syncButton: {
+    height: spacing.buttonHeight.base,
+    backgroundColor: colors.primary,
+    borderRadius: spacing.borderRadius.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.base,
+  },
+  syncButtonDisabled: {
+    opacity: 0.6,
+  },
+  syncButtonText: {
+    ...typography.styles.bodyBold,
+    color: colors.white,
+  },
+  migrateButton: {
+    height: spacing.buttonHeight.base,
+    backgroundColor: colors.white,
+    borderRadius: spacing.borderRadius.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.base,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  migrateButtonDisabled: {
+    opacity: 0.6,
+  },
+  migrateButtonText: {
+    ...typography.styles.bodyBold,
+    color: colors.primary,
   },
 });

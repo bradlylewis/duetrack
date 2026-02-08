@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@react-native-firebase/app';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { SyncProvider } from './src/contexts/SyncContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { initializeNotifications } from './src/services/notifications';
 import { initDatabase } from './src/db/database';
@@ -38,10 +39,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <View style={styles.container}>
-          <RootNavigator />
-          <StatusBar style="dark" />
-        </View>
+        <SyncProvider>
+          <View style={styles.container}>
+            <RootNavigator />
+            <StatusBar style="dark" />
+          </View>
+        </SyncProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

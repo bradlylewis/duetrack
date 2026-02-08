@@ -2,26 +2,32 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { Layout } from '../components/Layout';
 import { BillForm, BillFormValues } from '../components/BillForm';
-import { insertBill } from '../db/queries';
+import { insertBill } from '../db/sync-queries';
+import { useAuth } from '../contexts/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootTabParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootTabParamList, 'AddBill'>;
 
 export const AddBillScreen: React.FC<Props> = ({ navigation }) => {
+  const { user } = useAuth();
+  
   const handleSubmit = async (values: BillFormValues) => {
     try {
-      await insertBill({
-        name: values.name,
-        dueDate: values.dueDate,
-        amount: values.amount,
-        frequency: values.frequency,
-        autopay: values.autopay,
-        notes: values.notes,
-        iconKey: values.iconKey,
-        status: 'active',
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
+      await insertBill(
+        user?.uid || null,
+        {
+          name: values.name,
+          dueDate: values.dueDate,
+          amount: values.amount,
+          frequency: values.frequency,
+          autopay: values.autopay,
+          notes: values.notes,
+          iconKey: values.iconKey,
+          status: 'active',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }
+      );
 
       Alert.alert('Success', 'Bill added successfully!', [
         {

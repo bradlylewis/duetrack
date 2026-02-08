@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { Layout } from '../components/Layout';
 import { BillForm, BillFormValues } from '../components/BillForm';
-import { getBillById, updateBill, deleteBill, markBillAsPaid, getPaymentsForBill } from '../db/queries';
+import { getBillById, updateBill, deleteBill, markBillAsPaid, getPaymentsForBill } from '../db/sync-queries';
+import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'BillDetails'>;
 
 export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { billId } = route.params;
+  const { user } = useAuth();
   const [bill, setBill] = useState<Bill | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!bill) return;
 
     try {
-      await updateBill(billId, {
+      await updateBill(user?.uid || null, billId, {
         name: values.name,
         dueDate: values.dueDate,
         amount: values.amount,
@@ -82,7 +84,7 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteBill(billId);
+              await deleteBill(user?.uid || null, billId);
               Alert.alert('Success', 'Bill deleted successfully', [
                 {
                   text: 'OK',
@@ -109,7 +111,7 @@ export const BillDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           text: 'Mark Paid',
           onPress: async () => {
             try {
-              await markBillAsPaid(billId);
+              await markBillAsPaid(user?.uid || null, billId);
               await loadBill();
               Alert.alert('Success', 'Bill marked as paid!');
             } catch (error) {
