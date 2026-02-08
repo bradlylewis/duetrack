@@ -11,6 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Layout } from '../components/Layout';
 import { BillCard } from '../components/BillCard';
 import { NotificationPermissionBanner } from '../components/NotificationPermissionBanner';
+import { SyncStatusIndicator } from '../components/SyncStatusIndicator';
 import { getAllBills } from '../db/queries';
 import { checkAndUpdatePermissionStatus } from '../services/notifications';
 import { colors } from '../styles/colors';
@@ -178,6 +179,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             onDismiss={() => setBannerDismissed(true)}
           />
         )}
+        
+        <SyncStatusIndicator />
         
         {renderBillGroup('Overdue', overdue, colors.error, 'overdue')}
         {renderBillGroup('This Week', thisWeek, colors.warning, 'thisWeek')}
