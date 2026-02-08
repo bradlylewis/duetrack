@@ -25,6 +25,11 @@ service cloud.firestore {
       match /payments/{paymentId} {
         allow read, write: if isAuthenticated() && isOwner(uid);
       }
+      
+      // Meta subcollection (for migration status, etc.)
+      match /meta/{docId} {
+        allow read, write: if isAuthenticated() && isOwner(uid);
+      }
     }
   }
 }
