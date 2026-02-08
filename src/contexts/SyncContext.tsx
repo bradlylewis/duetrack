@@ -7,17 +7,22 @@ import {
   subscribeSyncState,
   setupRealtimeSync,
   migrateLocalDataToFirestore,
+  subscribeMigrationProgress,
   SyncState,
   SyncStatus,
+  MigrationResult,
+  MigrationProgress,
 } from '@/src/services/sync';
 import { Bill, Payment } from '@/src/types';
+import { MigrationModal } from '@/src/components/MigrationModal';
 
 interface SyncContextType {
   syncState: SyncState;
   syncNow: () => Promise<void>;
   syncBillChange: (operation: 'create' | 'update' | 'delete', bill: Bill) => Promise<void>;
   syncPaymentChange: (operation: 'create' | 'update' | 'delete', payment: Payment) => Promise<void>;
-  migrateData: () => Promise<void>;
+  migrateData: () => Promise<MigrationResult>;
+  migrationProgress: MigrationProgress | null;
   isSyncing: boolean;
   isOffline: boolean;
   hasError: boolean;
@@ -32,7 +37,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     lastSyncTime: null,
     error: null,
   });
+  const [migrationProgress, setMigrationProgress] = useState<MigrationProgress | null>(null);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
   const [dataRefreshTrigger, setDataRefreshTrigger] = useState(0);
+  const [migrationAttempted, setMigrationAttempted] = useState(false);
 
   // Subscribe to sync state changes
   useEffect(() => {
@@ -42,6 +50,27 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return unsubscribe;
   }, []);
+
+  // Subscribe to migration progress
+  useEffect(() => {
+    const unsubscribe = subscribeMigrationProgress((progress) => {
+      setMigrationProgress(progress);
+      
+      // Clear error if migration starts successfully
+      if (progress.phase !== 'complete' && migrationError) {
+        setMigrationError(null);
+      }
+      
+      // Auto-hide modal after 2 seconds when complete
+      if (progress.phase === 'complete') {
+        setTimeout(() => {
+          setMigrationProgress(null);
+        }, 2000);
+      }
+    });
+
+    return unsubscribe;
+  }, [migrationError]);
 
   // Setup real-time sync when user is authenticated
   useEffect(() => {
@@ -62,9 +91,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, [user?.uid]);
 
-  // Sync on app launch
+  // Attempt migration on first login
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || migrationAttempted) return;
+
+    const attemptMigration = async () => {
+      try {
+        setMigrationAttempted(true);
+        await migrateLocalDataToFirestore(user.uid);
+        // Refresh data after migration
+        setDataRefreshTrigger((prev) => prev + 1);
+      } catch (error: any) {
+        console.error('Auto-migration failed:', error);
+        setMigrationError(error.message || 'Migration failed. Please try again.');
+      }
+    };
+
+    attemptMigration();
+  }, [user?.uid, migrationAttempted]);
+
+  // Sync on app launch (after migration)
+  useEffect(() => {
+    if (!user?.uid || !migrationAttempted) return;
 
     const performInitialSync = async () => {
       try {
@@ -75,7 +123,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     performInitialSync();
-  }, [user?.uid]);
+  }, [user?.uid, migrationAttempted]);
 
   // Sync on app resume from background
   useEffect(() => {
@@ -130,13 +178,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   // Migrate local data to Firestore
-  const migrateData = useCallback(async () => {
+  const migrateData = useCallback(async (): Promise<MigrationResult> => {
     if (!user?.uid) {
       throw new Error('User not authenticated');
     }
 
-    await migrateLocalDataToFirestore(user.uid);
+    const result = await migrateLocalDataToFirestore(user.uid);
     setDataRefreshTrigger((prev) => prev + 1);
+    return result;
+  }, [user?.uid]);
+
+  // Retry migration
+  const handleRetryMigration = useCallback(async () => {
+    if (!user?.uid) return;
+    
+    setMigrationError(null);
+    try {
+      await migrateLocalDataToFirestore(user.uid);
+      setDataRefreshTrigger((prev) => prev + 1);
+    } catch (error: any) {
+      console.error('Migration retry failed:', error);
+      setMigrationError(error.message || 'Migration failed. Please try again.');
+    }
   }, [user?.uid]);
 
   const isSyncing = syncState.status === 'syncing';
@@ -151,12 +214,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         syncBillChange,
         syncPaymentChange,
         migrateData,
+        migrationProgress,
         isSyncing,
         isOffline,
         hasError,
       }}
     >
       {children}
+      <MigrationModal 
+        visible={migrationProgress !== null || migrationError !== null} 
+        progress={migrationProgress}
+        error={migrationError}
+        onRetry={handleRetryMigration}
+      />
     </SyncContext.Provider>
   );
 };

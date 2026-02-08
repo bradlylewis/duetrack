@@ -641,47 +641,183 @@ export function setupRealtimeSync(
   };
 }
 
+// Migration status storage key
+const MIGRATION_STATUS_KEY = '@duetrack:migrationComplete';
+
+export interface MigrationResult {
+  success: boolean;
+  billsUploaded: number;
+  paymentsUploaded: number;
+  billsMerged: number;
+  billsDuplicated: number;
+  error?: string;
+}
+
+export interface MigrationProgress {
+  phase: 'checking' | 'uploading_bills' | 'uploading_payments' | 'merging' | 'complete';
+  current: number;
+  total: number;
+  message: string;
+}
+
+// Migration progress listeners
+type MigrationProgressListener = (progress: MigrationProgress) => void;
+const migrationProgressListeners = new Set<MigrationProgressListener>();
+
+// Subscribe to migration progress
+export function subscribeMigrationProgress(listener: MigrationProgressListener): () => void {
+  migrationProgressListeners.add(listener);
+  return () => {
+    migrationProgressListeners.delete(listener);
+  };
+}
+
+// Update migration progress and notify listeners
+function updateMigrationProgress(progress: MigrationProgress) {
+  migrationProgressListeners.forEach(listener => listener(progress));
+}
+
+// Check if migration has been completed
+async function isMigrationComplete(userId: string): Promise<boolean> {
+  try {
+    const metaDoc = await firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('meta')
+      .doc('migration')
+      .get();
+    
+    return metaDoc.exists() && metaDoc.data()?.migrationComplete === true;
+  } catch (error) {
+    console.error('Error checking migration status:', error);
+    return false;
+  }
+}
+
+// Mark migration as complete
+async function markMigrationComplete(userId: string): Promise<void> {
+  await firestore()
+    .collection('users')
+    .doc(userId)
+    .collection('meta')
+    .doc('migration')
+    .set({
+      migrationComplete: true,
+      completedAt: firestore.Timestamp.now(),
+    });
+}
+
+// Check if two bills are duplicates based on name, amount, and dueDate
+function areBillsDuplicate(bill1: any, bill2: any): boolean {
+  return (
+    bill1.name.toLowerCase().trim() === bill2.name.toLowerCase().trim() &&
+    bill1.amount === bill2.amount &&
+    bill1.dueDate === bill2.dueDate
+  );
+}
+
 /**
- * Initial migration: upload all local data to Firestore
+ * Initial migration: upload all local data to Firestore with merge support
  */
-export async function migrateLocalDataToFirestore(userId: string): Promise<void> {
+export async function migrateLocalDataToFirestore(userId: string): Promise<MigrationResult> {
   if (!userId) {
     throw new Error('User ID is required for migration');
   }
   
+  const result: MigrationResult = {
+    success: false,
+    billsUploaded: 0,
+    paymentsUploaded: 0,
+    billsMerged: 0,
+    billsDuplicated: 0,
+  };
+  
   updateSyncState({ status: 'syncing', error: null });
   
   try {
-    const deviceId = await getDeviceId();
+    // Check if migration already completed
+    updateMigrationProgress({
+      phase: 'checking',
+      current: 0,
+      total: 1,
+      message: 'Checking migration status...',
+    });
     
-    // Check if migration already done
-    const billsRef = firestore().collection('users').doc(userId).collection('bills');
-    const existingBills = await billsRef.limit(1).get();
-    
-    if (!existingBills.empty) {
-      // Firestore already has data, skip migration
-      console.log('Migration skipped: Firestore already has data');
-      return;
+    const migrationDone = await isMigrationComplete(userId);
+    if (migrationDone) {
+      console.log('Migration skipped: Already completed');
+      result.success = true;
+      updateMigrationProgress({
+        phase: 'complete',
+        current: 1,
+        total: 1,
+        message: 'Migration already completed',
+      });
+      return result;
     }
     
-    // Get all local bills
-    const bills = await getAllAsync<any>('SELECT * FROM bills');
+    const deviceId = await getDeviceId();
     
-    if (bills.length > 0) {
-      // Upload bills in batches
-      for (let i = 0; i < bills.length; i += 500) {
+    // Get all local bills
+    const localBills = await getAllAsync<any>('SELECT * FROM bills');
+    
+    // Get all existing Firestore bills
+    const billsRef = firestore().collection('users').doc(userId).collection('bills');
+    const existingBillsSnapshot = await billsRef.get();
+    const existingBills = existingBillsSnapshot.docs.map(doc => doc.data());
+    
+    // Check if user has local data
+    if (localBills.length === 0 && existingBills.length === 0) {
+      // No data to migrate
+      await markMigrationComplete(userId);
+      result.success = true;
+      updateMigrationProgress({
+        phase: 'complete',
+        current: 1,
+        total: 1,
+        message: 'No data to migrate',
+      });
+      return result;
+    }
+    
+    // Merge scenario: deduplicate bills
+    const billsToUpload: Bill[] = [];
+    
+    for (const row of localBills) {
+      const sqliteBill: Bill = {
+        ...row,
+        autopay: row.autopay === 1,
+        dueDate: parseInt(row.dueDate, 10),
+        createdAt: parseInt(row.createdAt, 10),
+        updatedAt: parseInt(row.updatedAt, 10),
+      };
+      
+      // Check if this bill is a duplicate of existing Firestore bill
+      const isDuplicate = existingBills.some(existingBill => 
+        areBillsDuplicate(sqliteBill, existingBill)
+      );
+      
+      if (isDuplicate) {
+        result.billsDuplicated++;
+      } else {
+        billsToUpload.push(sqliteBill);
+      }
+    }
+    
+    // Upload bills in batches
+    if (billsToUpload.length > 0) {
+      updateMigrationProgress({
+        phase: 'uploading_bills',
+        current: 0,
+        total: billsToUpload.length,
+        message: `Syncing ${billsToUpload.length} bills...`,
+      });
+      
+      for (let i = 0; i < billsToUpload.length; i += 500) {
         const batch = firestore().batch();
-        const chunk = bills.slice(i, i + 500);
+        const chunk = billsToUpload.slice(i, i + 500);
         
-        for (const row of chunk) {
-          const sqliteBill: Bill = {
-            ...row,
-            autopay: row.autopay === 1,
-            dueDate: parseInt(row.dueDate, 10),
-            createdAt: parseInt(row.createdAt, 10),
-            updatedAt: parseInt(row.updatedAt, 10),
-          };
-          
+        for (const sqliteBill of chunk) {
           const firestoreBill = sqliteToFirestoreBill(sqliteBill, deviceId);
           
           const billRef = firestore()
@@ -694,17 +830,84 @@ export async function migrateLocalDataToFirestore(userId: string): Promise<void>
         }
         
         await batch.commit();
+        
+        result.billsUploaded += chunk.length;
+        
+        updateMigrationProgress({
+          phase: 'uploading_bills',
+          current: result.billsUploaded,
+          total: billsToUpload.length,
+          message: `Synced ${result.billsUploaded} of ${billsToUpload.length} bills...`,
+        });
+      }
+    }
+    
+    // If there were existing bills, merge them to local SQLite
+    if (existingBills.length > 0) {
+      updateMigrationProgress({
+        phase: 'merging',
+        current: 0,
+        total: existingBills.length,
+        message: `Merging ${existingBills.length} bills from cloud...`,
+      });
+      
+      for (const existingBill of existingBills) {
+        const firestoreBill = existingBill as FirestoreBill;
+        
+        // Check if this bill exists in local SQLite
+        const localBill = await getAsync<any>('SELECT id FROM bills WHERE id = ?', [firestoreBill.id]);
+        
+        if (!localBill) {
+          // Bill doesn't exist locally, add it
+          const sqliteBill = firestoreToSqliteBill(firestoreBill);
+          
+          await runAsync(
+            `INSERT INTO bills (id, name, dueDate, amount, frequency, autopay, notes, iconKey, status, createdAt, updatedAt, notificationIds, timezone)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              sqliteBill.id,
+              sqliteBill.name,
+              sqliteBill.dueDate,
+              sqliteBill.amount ?? null,
+              sqliteBill.frequency,
+              sqliteBill.autopay ? 1 : 0,
+              sqliteBill.notes ?? null,
+              sqliteBill.iconKey,
+              sqliteBill.status,
+              sqliteBill.createdAt,
+              sqliteBill.updatedAt,
+              sqliteBill.notificationIds ?? null,
+              sqliteBill.timezone ?? null,
+            ]
+          );
+          
+          result.billsMerged++;
+        }
+        
+        updateMigrationProgress({
+          phase: 'merging',
+          current: result.billsMerged,
+          total: existingBills.length,
+          message: `Merged ${result.billsMerged} bills from cloud...`,
+        });
       }
     }
     
     // Get all local payments
-    const payments = await getAllAsync<any>('SELECT * FROM payments');
+    const localPayments = await getAllAsync<any>('SELECT * FROM payments');
     
-    if (payments.length > 0) {
+    updateMigrationProgress({
+      phase: 'uploading_payments',
+      current: 0,
+      total: localPayments.length,
+      message: localPayments.length > 0 ? `Syncing ${localPayments.length} payments...` : 'Syncing payments...',
+    });
+    
+    if (localPayments.length > 0) {
       // Upload payments in batches
-      for (let i = 0; i < payments.length; i += 500) {
+      for (let i = 0; i < localPayments.length; i += 500) {
         const batch = firestore().batch();
-        const chunk = payments.slice(i, i + 500);
+        const chunk = localPayments.slice(i, i + 500);
         
         for (const row of chunk) {
           const sqlitePayment: Payment = {
@@ -725,12 +928,26 @@ export async function migrateLocalDataToFirestore(userId: string): Promise<void>
         }
         
         await batch.commit();
+        
+        result.paymentsUploaded += chunk.length;
+        
+        updateMigrationProgress({
+          phase: 'uploading_payments',
+          current: result.paymentsUploaded,
+          total: localPayments.length,
+          message: `Synced ${result.paymentsUploaded} of ${localPayments.length} payments...`,
+        });
       }
     }
+    
+    // Mark migration as complete
+    await markMigrationComplete(userId);
     
     // Update last sync time
     const now = Date.now();
     await updateLastSyncTime(now);
+    
+    result.success = true;
     
     updateSyncState({ 
       status: 'synced', 
@@ -738,13 +955,25 @@ export async function migrateLocalDataToFirestore(userId: string): Promise<void>
       error: null 
     });
     
-    console.log(`Migration complete: ${bills.length} bills, ${payments.length} payments`);
+    updateMigrationProgress({
+      phase: 'complete',
+      current: 1,
+      total: 1,
+      message: 'Your bills have been synced to the cloud',
+    });
+    
+    console.log('Migration complete:', result);
+    
+    return result;
   } catch (error: any) {
     console.error('Migration error:', error);
+    result.error = error.message || 'Migration failed';
+    
     updateSyncState({ 
       status: 'error', 
-      error: error.message || 'Migration failed' 
+      error: result.error 
     });
+    
     throw error;
   }
 }
