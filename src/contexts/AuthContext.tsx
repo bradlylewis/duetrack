@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { clearAllData } from '../db/database';
 
 interface AuthContextType {
   user: FirebaseAuthTypes.User | null;
@@ -8,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,8 +64,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      const currentUser = auth().currentUser;
+      if (!currentUser) {
+        throw new Error('No user is currently signed in.');
+      }
+
+      const uid = currentUser.uid;
+
+      // Step 1: Delete Firestore data (bills and payments)
+      try {
+        const billsRef = firestore().collection(`users`).doc(uid).collection('bills');
+        const paymentsRef = firestore().collection(`users`).doc(uid).collection('payments');
+        
+        // Batch delete bills
+        const billsSnapshot = await billsRef.get();
+        const batch = firestore().batch();
+        billsSnapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        
+        // Batch delete payments
+        const paymentsSnapshot = await paymentsRef.get();
+        paymentsSnapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        
+        // Commit batch delete
+        await batch.commit();
+      } catch (firestoreError) {
+        // Continue even if Firestore deletion fails (data might not exist yet)
+        console.warn('Firestore data deletion failed, continuing...', firestoreError);
+      }
+
+      // Step 2: Clear local SQLite data
+      await clearAllData();
+
+      // Step 3: Delete Firebase Auth user
+      await currentUser.delete();
+    } catch (error: any) {
+      // Handle re-authentication required error
+      if (error.code === 'auth/requires-recent-login') {
+        throw new Error('For security reasons, please sign out and sign back in before deleting your account.');
+      }
+      throw new Error(getAuthErrorMessage(error.code) || 'Unable to delete account. Please try again.');
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, sendPasswordReset }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, sendPasswordReset, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
@@ -97,6 +148,8 @@ function getAuthErrorMessage(errorCode: string): string {
       return 'Invalid email or password. Please try again.';
     case 'auth/too-many-requests':
       return 'Too many failed attempts. Please try again later.';
+    case 'auth/requires-recent-login':
+      return 'For security reasons, please sign out and sign back in before deleting your account.';
     case 'auth/network-request-failed':
       return 'Network error. Please check your internet connection.';
     default:
