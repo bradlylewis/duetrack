@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../styles/colors';
@@ -7,7 +7,8 @@ import { typography } from '../styles/typography';
 import { spacing } from '../styles/spacing';
 
 export const SettingsScreen: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSignOut = () => {
     Alert.alert(
@@ -25,6 +26,33 @@ export const SettingsScreen: React.FC = () => {
             try {
               await signOut();
             } catch (error: any) {
+              Alert.alert('Error', error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This will permanently delete all your bills, payment history, and account data. This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteAccount();
+              Alert.alert('Success', 'Account successfully deleted');
+            } catch (error: any) {
+              setIsDeleting(false);
               Alert.alert('Error', error.message);
             }
           },
@@ -53,6 +81,19 @@ export const SettingsScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
+                onPress={handleDeleteAccount}
+                activeOpacity={0.8}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={styles.deleteButtonText}>Delete Account</Text>
+                )}
               </TouchableOpacity>
             </View>
           )}
@@ -118,6 +159,23 @@ const styles = StyleSheet.create({
     marginTop: spacing.base,
   },
   signOutButtonText: {
+    ...typography.styles.bodyBold,
+    color: colors.white,
+  },
+  deleteButton: {
+    height: spacing.buttonHeight.base,
+    backgroundColor: colors.error,
+    borderRadius: spacing.borderRadius.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.base,
+    borderWidth: 2,
+    borderColor: colors.error,
+  },
+  deleteButtonDisabled: {
+    opacity: 0.6,
+  },
+  deleteButtonText: {
     ...typography.styles.bodyBold,
     color: colors.white,
   },
